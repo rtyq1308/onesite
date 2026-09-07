@@ -1,0 +1,11 @@
+# 원본 응답은 매번 다시 받으므로 저장소에 넣지 않는다 (수십 MB).
+data/raw/*.json
+data/raw/*.txt
+!data/raw/.gitkeep
+
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+# 인증키는 어떤 것도 올라가면 안 된다
+data/*.key

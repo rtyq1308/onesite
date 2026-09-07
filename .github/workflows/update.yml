@@ -1,0 +1,53 @@
+name: 공공데이터 갱신 및 사이트 빌드
+
+on:
+  schedule:
+    - cron: "0 19 1 * *"   # 매월 2일 04:00 KST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # secrets 컨텍스트는 step 의 if: 에서 못 쓴다. env 로 올려두고 그걸 검사한다.
+    env:
+      SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 공공데이터 수집
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+        run: python scripts/fetch_data.py
+
+      # 서울은 표준데이터에 15곳뿐이라 열린데이터광장에서 따로 받는다.
+      - name: 서울 공영주차장 수집
+        if: env.SEOUL_API_KEY != ''
+        run: python scripts/fetch_seoul.py
+
+      - name: 정적 사이트 생성
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
+          ADSENSE_SLOT_TOP: ${{ vars.ADSENSE_SLOT_TOP }}
+          ADSENSE_SLOT_FEED: ${{ vars.ADSENSE_SLOT_FEED }}
+          ADSENSE_SLOT_BOTTOM: ${{ vars.ADSENSE_SLOT_BOTTOM }}
+        run: python scripts/build_site.py
+
+      - name: 변경분 커밋
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist
+          if git diff --cached --quiet; then
+            echo "변경 없음"
+          else
+            git commit -m "chore: 공공데이터 갱신 $(date +%Y-%m-%d)"
+            git push
+          fi
