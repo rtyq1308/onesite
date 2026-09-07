@@ -243,3 +243,14 @@ footer.site {
 @media (prefers-color-scheme: dark) {
   .warn-note { color: #e0b256; }
 }
+
+/* 개인정보처리방침 등 문서 페이지 */
+main.wrap h2 + p, main.wrap p + p { margin: 0 0 10px; }
+main.wrap code {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 12.5px;
+}
+footer.site a { color: var(--muted); }

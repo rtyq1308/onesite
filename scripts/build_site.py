@@ -24,7 +24,9 @@ RAW_DIR = os.path.join(ROOT, "data", "raw")
 STATIC_DIR = os.path.join(ROOT, "static")
 DIST = os.path.join(ROOT, "dist")
 
-SITE_URL = os.environ.get("SITE_URL", "https://freemap-kr.pages.dev").rstrip("/")
+# canonical·사이트맵은 빌드 시점에 고정된다. 기본값을 실제 도메인으로 둬서
+# 로컬에서 다시 빌드해도 주소가 어긋나지 않게 한다. 환경변수로 덮어쓸 수 있다.
+SITE_URL = os.environ.get("SITE_URL", "https://parking.itfinancelab.com").rstrip("/")
 SITE_NAME = "공짜맵"
 TODAY = datetime.date.today().isoformat()
 
@@ -246,8 +248,9 @@ PAGE = """<!doctype html>
 {{BODY}}
 </main>
 <footer class="site"><div class="wrap">
-자료 출처: 공공데이터포털 「전국주차장정보표준데이터」 (갱신 {{UPDATED}})<br>
-요금과 운영시간은 현장 사정에 따라 달라질 수 있으니 방문 전 확인하세요.
+자료 출처: 공공데이터포털 「전국주차장정보표준데이터」, 서울 열린데이터광장 (갱신 {{UPDATED}})<br>
+요금과 운영시간은 현장 사정에 따라 달라질 수 있으니 방문 전 확인하세요.<br>
+<a href="{{ROOT}}privacy/">개인정보처리방침</a>
 </div></footer>
 {{SCRIPTS}}
 </body>
@@ -352,6 +355,91 @@ def faq_ld():
             for q, a in FAQ
         ],
     }
+
+
+# 개인정보처리방침에 공개되는 문의처. 애드센스 승인 필수 항목이다.
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "rtyq1308@gmail.com").strip()
+
+# 애드센스 승인 필수 요건. 내용은 이 사이트가 실제로 하는 일과 정확히 일치해야 한다.
+PRIVACY_SECTIONS = [
+    ("수집하는 개인정보", [
+        "이 사이트는 회원가입과 로그인이 없으며, 이름·전화번호·이메일 등 개인을 "
+        "식별할 수 있는 정보를 직접 수집하지 않습니다.",
+        "별도의 데이터베이스 서버를 운영하지 않고, 미리 만들어 둔 정적 파일만 "
+        "제공합니다. 이용자가 입력한 내용을 저장하는 기능 자체가 없습니다.",
+    ]),
+    ("위치정보 처리", [
+        "“내 주변 무료주차장 찾기” 기능은 브라우저의 위치정보 기능(Geolocation API)을 "
+        "사용합니다. 이 위치는 <b>이용자의 기기 안에서만</b> 가까운 주차장을 계산하는 데 "
+        "쓰이며, 서버로 전송하거나 저장하지 않습니다.",
+        "위치 권한 요청을 거부해도 사이트의 다른 기능은 모두 정상적으로 이용할 수 "
+        "있습니다. 권한은 브라우저 설정에서 언제든 철회할 수 있습니다.",
+    ]),
+    ("쿠키와 광고", [
+        "이 사이트는 구글 애드센스를 통해 광고를 게재할 수 있습니다. 구글을 포함한 "
+        "제3자 광고 공급업체는 쿠키를 사용하여 이용자의 이전 방문 기록을 바탕으로 "
+        "광고를 게재할 수 있습니다.",
+        "구글의 광고 쿠키 사용은 "
+        '<a href="https://policies.google.com/technologies/ads" target="_blank" '
+        'rel="noopener">구글 광고 정책</a>을 따릅니다. 개인 맞춤 광고는 '
+        '<a href="https://myadcenter.google.com" target="_blank" rel="noopener">'
+        "구글 광고 설정</a>에서 해제할 수 있습니다.",
+        "브라우저 설정에서 쿠키를 차단할 수 있으며, 차단하더라도 주차장 정보 조회에는 "
+        "지장이 없습니다.",
+    ]),
+    ("접속 기록", [
+        "이 사이트는 Cloudflare Pages로 호스팅됩니다. 호스팅 제공자는 서비스 운영과 "
+        "보안을 위해 접속 IP, 브라우저 종류 등의 기술적 기록을 처리할 수 있습니다. "
+        "운영자는 이 기록을 개별적으로 조회하거나 다른 정보와 결합하지 않습니다.",
+    ]),
+    ("외부 서비스 연결", [
+        "지도는 OpenStreetMap의 타일 이미지를 사용합니다. 각 주차장의 “카카오맵 길찾기”, "
+        "“구글맵” 버튼을 누르면 해당 외부 서비스로 이동하며, 이동한 뒤에는 각 서비스의 "
+        "개인정보 처리방침이 적용됩니다.",
+    ]),
+    ("정보의 정확성", [
+        "주차장 정보는 행정안전부 「전국주차장정보표준데이터」와 서울 열린데이터광장의 "
+        "공영주차장 정보를 가공한 것입니다. 지방자치단체가 신고한 내용을 그대로 반영하므로 "
+        "실제 요금·운영시간과 다를 수 있으며, 이용자는 방문 전 현장 안내를 확인해야 합니다.",
+        "잘못된 정보로 인해 발생한 손해에 대해 운영자는 책임을 지지 않습니다.",
+    ]),
+    ("만 14세 미만 아동", [
+        "이 사이트는 만 14세 미만 아동을 대상으로 하지 않으며, 아동의 개인정보를 "
+        "고의로 수집하지 않습니다.",
+    ]),
+]
+
+
+def build_privacy_page():
+    blocks = []
+    for index, (title, paragraphs) in enumerate(PRIVACY_SECTIONS, start=1):
+        body = "".join("<p>%s</p>" % p for p in paragraphs)   # 링크·<b> 유지 위해 이스케이프 안 함
+        blocks.append("<h2>%d. %s</h2>%s" % (index, e(title), body))
+
+    contact = (
+        '<p>개인정보 처리에 관한 문의는 <a href="mailto:%s">%s</a> 로 보내주시기 바랍니다.</p>'
+        % (e(CONTACT_EMAIL), e(CONTACT_EMAIL))
+        if CONTACT_EMAIL else
+        '<p class="note">※ 운영자 연락처가 아직 설정되지 않았습니다. '
+        "빌드 시 환경변수 <code>CONTACT_EMAIL</code> 을 지정하면 이 자리에 표시됩니다. "
+        "애드센스 승인 신청 전에 반드시 채워야 합니다.</p>"
+    )
+
+    body = (
+        '<p class="crumb"><a href="../">홈</a> › 개인정보처리방침</p>'
+        + "<h1>개인정보처리방침</h1>"
+        + '<p class="lead">공짜맵(이하 “사이트”)은 이용자의 개인정보를 소중히 다루며, '
+          "이 사이트가 정보를 어떻게 다루는지 아래와 같이 안내합니다.</p>"
+        + "".join(blocks)
+        + "<h2>%d. 문의처</h2>%s" % (len(PRIVACY_SECTIONS) + 1, contact)
+        + "<h2>%d. 방침의 변경</h2>" % (len(PRIVACY_SECTIONS) + 2)
+        + "<p>이 방침의 내용이 바뀌는 경우 이 페이지를 통해 알립니다.</p>"
+        + '<p class="note">시행일: %s</p>' % TODAY
+    )
+    render("privacy/index.html", "개인정보처리방침 | %s" % SITE_NAME,
+           "공짜맵의 개인정보처리방침입니다. 위치정보 처리, 쿠키와 광고, 접속 기록에 "
+           "대한 안내를 담고 있습니다.",
+           SITE_URL + "/privacy/", body, "../")
 
 
 def list_block():
@@ -735,6 +823,8 @@ def main():
     )[:12]
 
     build_home(index, len(rows), total_slots, top_regions)
+    build_privacy_page()
+    urls.append(SITE_URL + "/privacy/")
     write_support_files(urls)
     print("페이지 %d개 생성 완료 -> %s" % (len(urls), DIST))
 
