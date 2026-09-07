@@ -46,7 +46,24 @@
 
   /* ---------- 렌더 ---------- */
 
-  function itemHTML(row) {
+  /* 길찾기·전화 링크. 카드와 지도 팝업이 같은 걸 쓴다.
+     target="_blank" 를 쓰지 않는 이유: 자동 광고의 전면광고(Vignette)가 클릭을
+     가로채면 새 탭이 사라져서, 광고를 닫아도 목적지로 못 간다.
+     같은 탭 이동으로 두면 광고를 닫는 순간 브라우저가 원래 이동을 이어서 수행한다. */
+  function actionsHTML(row, index) {
+    var kakao = "https://map.kakao.com/link/to/" +
+      encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
+    var google = "https://www.google.com/maps/dir/?api=1&destination=" + row.la + "," + row.lo;
+    var naver = "https://map.naver.com/p/search/" + encodeURIComponent(row.nm);
+
+    return '<a class="act" href="' + kakao + '">카카오맵 길찾기</a>' +
+      '<a class="act" href="' + google + '">구글맵</a>' +
+      '<a class="act" href="' + naver + '">네이버지도</a>' +
+      (row.tel ? '<a class="act" href="tel:' + esc(row.tel) + '">전화 ' + esc(row.tel) + "</a>" : "") +
+      (index != null ? '<button type="button" class="act" data-goto="' + index + '">목록에서 보기</button>' : "");
+  }
+
+  function itemHTML(row, index) {
     // fl 이 비어 있으면 상시 무료, 값이 있으면 그 요일에만 무료다.
     var partly = !!(row.fl && row.fl.length);
     var chips = [];
@@ -63,20 +80,13 @@
     if (row.tm) chips.push('<span class="chip plain">' + esc(row.tm) + "</span>");
     if (row._km != null) chips.push('<span class="chip plain">' + row._km.toFixed(1) + "km</span>");
 
-    var kakao = "https://map.kakao.com/link/to/" +
-      encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
-    var google = "https://www.google.com/maps/dir/?api=1&destination=" + row.la + "," + row.lo;
-
-    return '<article class="item">' +
+    return '<article class="item" id="spot-' + index + '">' +
       "<h3>" + esc(row.nm) + "</h3>" +
       '<p class="addr">' + esc(row.ad) + "</p>" +
       '<div class="meta">' + chips.join("") + "</div>" +
       (partly ? '<p class="warn-note">평일에는 요금을 받습니다</p>' : "") +
-      '<div class="links">' +
-      '<a href="' + kakao + '" target="_blank" rel="noopener">카카오맵 길찾기</a>' +
-      '<a href="' + google + '" target="_blank" rel="noopener">구글맵</a>' +
-      (row.tel ? '<a href="tel:' + esc(row.tel) + '">' + esc(row.tel) + "</a>" : "") +
-      "</div></article>";
+      '<div class="links">' + actionsHTML(row, null) + "</div>" +
+      "</article>";
   }
 
   function renderList() {
@@ -87,7 +97,9 @@
     if (!rows.length) {
       box.innerHTML = '<p class="empty">이 지역에는 등록된 무료주차장이 없습니다.</p>';
     } else {
-      box.innerHTML = rows.slice(0, 300).map(itemHTML).join("");
+      box.innerHTML = rows.slice(0, 300).map(function (r, i) {
+        return itemHTML(r, i);
+      }).join("");
     }
 
     var more = el("#more");
@@ -128,14 +140,30 @@
     var rows = state.rows.slice(0, 500);
     if (!rows.length) return;
 
-    var markers = rows.map(function (r) {
+    var markers = rows.map(function (r, i) {
       // 상시 무료와 요일별 무료를 지도에서도 색으로 구분한다.
       var partly = !!(r.fl && r.fl.length);
       var color = partly ? COLOR_PARTLY : COLOR;
-      var when = partly ? "<br>" + esc(r.fl.join(", ")) + " (평일 유료)" : "";
+      var when = partly
+        ? '<span class="pop-warn">' + esc(r.fl.join(", ")) + " · 평일 유료</span>"
+        : '<span class="pop-free">상시 무료</span>';
+      var extra = [];
+      if (r.cp) extra.push(esc(r.cp) + "면");
+      if (r.tm) extra.push(esc(r.tm));
+
+      // 마커를 누르면 길찾기·전화까지 팝업에서 바로 되게 한다.
+      var popup =
+        '<div class="pop">' +
+        '<b class="pop-nm">' + esc(r.nm) + "</b>" +
+        '<span class="pop-ad">' + esc(r.ad) + "</span>" +
+        when +
+        (extra.length ? '<span class="pop-ad">' + extra.join(" · ") + "</span>" : "") +
+        '<span class="pop-acts">' + actionsHTML(r, i < 300 ? i : null) + "</span>" +
+        "</div>";
+
       return L.circleMarker([r.la, r.lo], {
-        radius: 6, weight: 2, color: color, fillColor: color, fillOpacity: 0.55
-      }).bindPopup("<b>" + esc(r.nm) + "</b><br>" + esc(r.ad) + when);
+        radius: 7, weight: 2, color: color, fillColor: color, fillOpacity: 0.55
+      }).bindPopup(popup, { minWidth: 210, maxWidth: 260 });
     });
     state.layer = L.layerGroup(markers).addTo(state.map);
 
@@ -340,8 +368,23 @@
     });
   }
 
+  /* 지도 팝업의 "목록에서 보기" — 해당 카드로 스크롤하고 잠깐 강조한다. */
+  function bindGoto() {
+    document.addEventListener("click", function (ev) {
+      var btn = ev.target.closest && ev.target.closest("[data-goto]");
+      if (!btn) return;
+      var card = document.getElementById("spot-" + btn.dataset.goto);
+      if (!card) return;
+      if (state.map) state.map.closePopup();
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.classList.add("hit");
+      setTimeout(function () { card.classList.remove("hit"); }, 2000);
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     bindShare();
+    bindGoto();
     if (CFG.mode === "region") startRegionPage();
     else if (CFG.mode === "home") startHomePage();
   });

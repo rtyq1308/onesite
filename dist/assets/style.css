@@ -254,3 +254,40 @@ main.wrap code {
   font-size: 12.5px;
 }
 footer.site a { color: var(--muted); }
+
+/* 지도 마커 팝업 - 여기서 바로 길찾기·전화가 되게 한다 */
+.leaflet-popup-content { margin: 12px 14px; }
+.pop { display: flex; flex-direction: column; gap: 3px; }
+.pop-nm { font-size: 14.5px; }
+.pop-ad { color: var(--muted); font-size: 12.5px; }
+.pop-free { color: var(--accent); font-size: 12px; font-weight: 600; }
+.pop-warn { color: #8a5b03; font-size: 12px; font-weight: 600; }
+.pop-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+.act {
+  display: inline-block;
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 5px 11px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pop-acts .act:first-child,
+.item .links .act:first-child {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* "목록에서 보기" 로 이동했을 때 잠깐 강조 */
+.item.hit {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
