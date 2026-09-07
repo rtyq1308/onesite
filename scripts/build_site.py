@@ -11,6 +11,7 @@
 """
 
 import datetime
+import hashlib
 import html
 import json
 import os
@@ -39,6 +40,20 @@ AD_SLOTS = {
     "bottom": os.environ.get("ADSENSE_SLOT_BOTTOM", "1054501259").strip(),  # 목록 끝
 }
 WRITE_ADS_TXT = os.environ.get("WRITE_ADS_TXT", "").strip() not in ("", "0", "false")
+
+
+def asset_version(name):
+    """assets 는 7일 캐시라, 파일이 바뀌어도 이미 방문한 기기는 옛 파일을 계속 쓴다.
+    내용 해시를 주소에 붙여 내용이 바뀌면 즉시 새로 받게 한다."""
+    try:
+        with open(os.path.join(STATIC_DIR, name), "rb") as fp:
+            return hashlib.md5(fp.read()).hexdigest()[:8]
+    except OSError:
+        return "0"
+
+
+JS_VER = asset_version("app.js")
+CSS_VER = asset_version("style.css")
 
 # 이만큼도 안 되는 지역은 색인 제외 + 광고 미노출 (빈약한 콘텐츠 정책 회피).
 THIN_PAGE_MIN = 3
@@ -483,6 +498,11 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
         ("{{SCRIPTS}}", scripts), ("{{UPDATED}}", TODAY),
     ]:
         page = page.replace(key, value)
+
+    # 캐시 무효화. 파일 내용이 바뀔 때만 주소가 바뀌므로 캐시 이점은 그대로 둔다.
+    page = page.replace('assets/app.js"', 'assets/app.js?v=%s"' % JS_VER)
+    page = page.replace('assets/style.css"', 'assets/style.css?v=%s"' % CSS_VER)
+
     full = os.path.join(DIST, path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
     with open(full, "w", encoding="utf-8", newline="\n") as fp:
