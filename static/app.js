@@ -60,9 +60,9 @@
     var naver = "https://map.naver.com/p/search/" +
       encodeURIComponent(row.ad || row.nm);
     // 카카오 계열은 브랜드 노란색(.kakao)으로 구분한다.
-    return '<a class="act kakao" href="' + kakao + '">카카오맵</a>' +
+    return '<a class="act kakao" href="' + kakao + '">카카오맵 길찾기</a>' +
       '<a class="act" href="' + google + '">구글맵 길찾기</a>' +
-      '<a class="act" href="' + naver + '">네이버지도</a>' +
+      '<a class="act" href="' + naver + '">네이버지도 길찾기</a>' +
       (row.tel ? '<a class="act" href="tel:' + esc(row.tel) + '">전화 ' + esc(row.tel) + "</a>" : "") +
       (index != null ? '<button type="button" class="act" data-goto="' + index + '">목록에서 보기</button>' : "");
   }
