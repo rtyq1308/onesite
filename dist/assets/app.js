@@ -465,6 +465,18 @@
           case "native":
             navigator.share({ title: title, url: prettyUrl }).catch(function () { });
             break;
+          // 공유 시트가 되면 시트를, 안 되면 주소 복사로 넘어가는 만능 버튼
+          case "quick":
+            if (navigator.share) {
+              navigator.share({ title: title, url: prettyUrl }).catch(function () { });
+            } else {
+              copyLink(prettyUrl).then(function () {
+                toast("주소를 복사했습니다");
+              }).catch(function () {
+                toast("복사에 실패했습니다. 주소창을 직접 복사해주세요");
+              });
+            }
+            break;
           case "copy":
             copyLink(prettyUrl).then(function () {
               toast("주소를 복사했습니다");

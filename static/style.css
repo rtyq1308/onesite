@@ -427,3 +427,6 @@ main.wrap code {
 }
 .pin-paid span { background: #2f5fb8; }
 .pin-unknown span { background: #6b7280; }
+
+/* 내 주변 찾기 + 공유하기 나란히 */
+.cta { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }

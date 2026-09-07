@@ -736,7 +736,8 @@ def build_home(index, total, total_slots, top_regions, free_total):
         + stat_block([("무료주차장", format(free_total, ",") + "곳"),
                       ("전체 주차장", count_text + "곳"),
                       ("갱신일", TODAY)])
-        + '<p><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button></p>'
+        + '<p class="cta"><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button>'
+          '<button type="button" class="btn" data-share="quick">공유하기</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
         + '<div id="map"></div>'
         # 지역 페이지와 같은 이유로 공유를 목록 앞에 둔다.
