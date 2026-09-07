@@ -47,15 +47,14 @@
   /* ---------- 렌더 ---------- */
 
   /* 길찾기·전화 링크. 카드와 지도 팝업이 같은 걸 쓴다.
-     target="_blank" 를 쓰지 않는 이유: 자동 광고의 전면광고(Vignette)가 클릭을
-     가로채면 새 탭이 사라져서, 광고를 닫아도 목적지로 못 간다.
-     같은 탭 이동으로 두면 광고를 닫는 순간 브라우저가 원래 이동을 이어서 수행한다. */
+     현재 창에서 연다. 전면광고(Vignette)가 클릭을 가로채도, 같은 탭 이동이면
+     광고를 닫는 순간 브라우저가 원래 이동을 이어서 수행하기 때문이다.
+     새 탭으로 열면 광고에 가로채인 탭이 사라져 목적지로 가지 못한다. */
   function actionsHTML(row, index) {
     var kakao = "https://map.kakao.com/link/to/" +
       encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
     var google = "https://www.google.com/maps/dir/?api=1&destination=" + row.la + "," + row.lo;
     var naver = "https://map.naver.com/p/search/" + encodeURIComponent(row.nm);
-
     return '<a class="act" href="' + kakao + '">카카오맵 길찾기</a>' +
       '<a class="act" href="' + google + '">구글맵</a>' +
       '<a class="act" href="' + naver + '">네이버지도</a>' +
