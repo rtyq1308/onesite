@@ -52,7 +52,11 @@
     var kakao = "https://map.kakao.com/link/to/" +
       encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
     var google = "https://www.google.com/maps/dir/?api=1&destination=" + row.la + "," + row.lo;
-    var naver = "https://map.naver.com/p/search/" + encodeURIComponent(row.nm);
+    // 네이버는 좌표 링크 규격이 자주 바뀌어 주소 검색으로 보낸다.
+    // 이름으로 보내면 '한류월드 제4' 처럼 지자체가 줄여 신고한 이름이
+    // 검색에 안 걸려 빈 화면이 뜬다. 주소는 지번·도로명 모두 정확히 잡힌다.
+    var naver = "https://map.naver.com/p/search/" +
+      encodeURIComponent(row.ad || row.nm);
     // 가장 많이 쓰는 동선이라 카카오맵만 강조 버튼(.go)으로 둔다.
     return '<a class="act go" href="' + kakao + '">카카오맵 길찾기</a>' +
       '<a class="act" href="' + google + '">구글맵</a>' +
