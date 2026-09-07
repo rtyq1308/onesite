@@ -808,18 +808,64 @@ def build_home(index, total, total_slots, top_regions, free_total):
     render("index.html", title, desc, SITE_URL + "/", body, "", MAP_HEAD, scripts)
 
 
+LASTMOD_PATH = os.path.join(ROOT, "data", "lastmod.json")
+
+
+def load_lastmod():
+    """페이지별 '내용 해시 + 마지막으로 실제 바뀐 날짜'. 저장소에 함께 커밋한다."""
+    try:
+        with open(LASTMOD_PATH, encoding="utf-8") as fp:
+            return json.load(fp)
+    except (OSError, ValueError):
+        return {}
+
+
+def resolve_lastmod(entries):
+    """내용이 그대로면 예전 날짜를 유지한다.
+
+    매번 오늘 날짜를 넣으면 바뀌지도 않은 242개 페이지가 전부 '오늘 수정됨'이
+    되어, 검색엔진이 lastmod 자체를 신뢰하지 않게 되고 크롤 예산도 낭비된다.
+    entries: [(url, content_hash)] -> {url: 'YYYY-MM-DD'}
+    """
+    old = load_lastmod()
+    new, dates, changed = {}, {}, 0
+    for url, digest in entries:
+        prev = old.get(url)
+        if prev and prev.get("h") == digest:
+            dates[url] = prev.get("d", TODAY)
+        else:
+            dates[url] = TODAY
+            changed += 1
+        new[url] = {"h": digest, "d": dates[url]}
+
+    with open(LASTMOD_PATH, "w", encoding="utf-8", newline="\n") as fp:
+        json.dump(new, fp, ensure_ascii=False, indent=0, sort_keys=True)
+    print("  변경된 페이지 %d개 / 전체 %d개" % (changed, len(entries)))
+    return dates
+
+
+def content_hash(value):
+    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+    return hashlib.md5(raw.encode("utf-8")).hexdigest()[:16]
+
+
 def esc_url(url):
     """사이트맵·RSS 규격은 주소를 URL 이스케이프하도록 요구한다.
     주소에 한글이 들어가므로 그대로 두면 검증에서 거절될 수 있다."""
     return urllib.parse.quote(url, safe=":/?#[]@!$&'()*+,;=~-._")
 
 
-def write_rss(items):
+def write_rss(items, dates):
     """네이버 웹마스터도구는 사이트맵과 별개로 RSS 도 받는다.
     글이 쌓이는 사이트가 아니므로, 주차장이 많은 지역 페이지를 항목으로 낸다."""
     now = email.utils.formatdate(usegmt=True)
     entries = []
     for title, link, desc in items[:100]:
+        # 실제로 내용이 바뀐 날. 매번 빌드 시각을 넣으면 네이버가
+        # 매주 '새 글 100개'로 오인한다.
+        day = dates.get(link, TODAY)
+        pub = email.utils.formatdate(
+            time.mktime(datetime.date.fromisoformat(day).timetuple()), usegmt=True)
         entries.append(
             "<item>"
             "<title>%s</title>"
@@ -827,7 +873,7 @@ def write_rss(items):
             "<guid isPermaLink=\"true\">%s</guid>"
             "<description>%s</description>"
             "<pubDate>%s</pubDate>"
-            "</item>" % (e(title), esc_url(link), esc_url(link), e(desc), now)
+            "</item>" % (e(title), esc_url(link), esc_url(link), e(desc), pub)
         )
     xml = ('<?xml version="1.0" encoding="UTF-8"?>'
            '<rss version="2.0"><channel>'
@@ -842,9 +888,10 @@ def write_rss(items):
         fp.write(xml)
 
 
-def write_support_files(urls):
+def write_support_files(urls, dates):
     entries = "".join(
-        "<url><loc>%s</loc><lastmod>%s</lastmod></url>" % (e(esc_url(loc)), TODAY)
+        "<url><loc>%s</loc><lastmod>%s</lastmod></url>"
+        % (e(esc_url(loc)), dates.get(loc, TODAY))
         for loc in urls
     )
     with open(os.path.join(DIST, "sitemap.xml"), "w", encoding="utf-8", newline="\n") as fp:
@@ -942,6 +989,7 @@ def main():
 
     urls = [SITE_URL + "/"]
     feed_items = []
+    hashes = []   # (url, 내용 해시) - 실제로 바뀐 페이지만 lastmod 를 올린다
     index = {"updated": TODAY, "sido": []}
     total_slots = sum(r["cp"] for r in rows)
 
@@ -960,7 +1008,9 @@ def main():
             build_region_json(sido, sigungu, bucket)
             url_path = build_region_page(sido, sigungu, bucket, siblings)
             if url_path:  # 항목이 너무 적은 지역은 noindex라 사이트맵에서도 뺀다
-                urls.append(SITE_URL + "/" + url_path)
+                page_url = SITE_URL + "/" + url_path
+                urls.append(page_url)
+                hashes.append((page_url, content_hash(bucket)))
                 free_here = sum(1 for r in bucket if r["fr"])
                 feed_items.append((
                     len(bucket),
@@ -974,7 +1024,9 @@ def main():
             sido_entry["sgg"].append({"nm": sigungu, "p": len(bucket), "c": centre})
 
         build_sido_page(sido, siblings, sido_total)
-        urls.append("%s/%s/" % (SITE_URL, sido))
+        sido_url = "%s/%s/" % (SITE_URL, sido)
+        urls.append(sido_url)
+        hashes.append((sido_url, content_hash(siblings)))
         index["sido"].append(sido_entry)
 
     with open(os.path.join(DIST, "data", "index.json"), "w", encoding="utf-8", newline="\n") as fp:
@@ -986,12 +1038,17 @@ def main():
     )[:12]
 
     build_home(index, len(rows), total_slots, top_regions, free_n)
+    hashes.append((SITE_URL + "/", content_hash(index)))
+
     build_privacy_page()
     urls.append(SITE_URL + "/privacy/")
-    write_support_files(urls)
+    hashes.append((SITE_URL + "/privacy/", content_hash([PRIVACY_SECTIONS, CONTACT_EMAIL])))
+
+    dates = resolve_lastmod(hashes)
+    write_support_files(urls, dates)
     # RSS 는 주차장이 많은 지역부터. 네이버가 사이트맵과 별개로 받는다.
     feed_items.sort(key=lambda x: -x[0])
-    write_rss([(t, l, d) for _n, t, l, d in feed_items])
+    write_rss([(t, l, d) for _n, t, l, d in feed_items], dates)
     print("페이지 %d개 생성 완료 (RSS %d건) -> %s"
           % (len(urls), min(len(feed_items), 100), DIST))
 
