@@ -174,10 +174,16 @@
       if (labeled.length + dots.length >= 3000) break;
 
       var pt = state.map.latLngToLayerPoint([r.la, r.lo]);
-      var clear = labeled.length < 140;
-      for (var j = 0; clear && j < placed.length; j++) {
-        if (Math.abs(placed[j].x - pt.x) < 56 && Math.abs(placed[j].y - pt.y) < 22) {
-          clear = false;
+
+      // 무료는 이 사이트의 존재 이유다. 겹치든 말든 무조건 글자로 보여준다.
+      // 겹침 때문에 점으로 내려가는 건 유료·요일별만 해당된다.
+      var clear = kindOf(r) === "free";
+      if (!clear) {
+        clear = labeled.length < 140;
+        for (var j = 0; clear && j < placed.length; j++) {
+          if (Math.abs(placed[j].x - pt.x) < 56 && Math.abs(placed[j].y - pt.y) < 22) {
+            clear = false;
+          }
         }
       }
       if (clear) {
