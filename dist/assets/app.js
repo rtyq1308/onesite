@@ -170,7 +170,8 @@
     for (var i = 0; i < state.rows.length; i++) {
       var r = state.rows[i];
       if (!bounds.contains([r.la, r.lo])) continue;
-      if (labeled.length + dots.length >= 500) break;
+      // 화면 안에 있으면 하나도 빼지 않는다. 라벨 자리가 없으면 점으로 남긴다.
+      if (labeled.length + dots.length >= 3000) break;
 
       var pt = state.map.latLngToLayerPoint([r.la, r.lo]);
       var clear = labeled.length < 140;
@@ -290,7 +291,11 @@
     window.addEventListener("orientationchange", refit);
 
     // 확대하면 가려졌던 곳이 하나씩 드러난다.
-    state.map.on("moveend zoomend", renderMarkers);
+    var drawTimer;
+    state.map.on("moveend zoomend", function () {
+      clearTimeout(drawTimer);
+      drawTimer = setTimeout(renderMarkers, 120);
+    });
   }
 
   /* ---------- 페이지별 진입 ---------- */
@@ -343,7 +348,7 @@
         });
       });
       cells.sort(function (a, b) { return a.km - b.km; });
-      var picks = cells.slice(0, 3);
+      var picks = cells.slice(0, 5);
       msg.textContent = picks.map(function (c) { return c.sigungu; }).join(", ") + " 데이터를 불러오는 중…";
 
       return Promise.all(picks.map(function (c) {
@@ -355,10 +360,13 @@
           r._km = distanceKm(state.origin[0], state.origin[1], r.la, r.lo);
         });
         merged.sort(function (a, b) { return a._km - b._km; });
-        state.rows = merged.slice(0, 60);
+        state.rows = merged.slice(0, 300);
 
         el("#nearby-result").hidden = false;
-        msg.textContent = picks[0].sido + " " + picks[0].sigungu + " 부근 기준, 가까운 순 60곳입니다.";
+        var freeCount = state.rows.filter(function (r) { return r.fr; }).length;
+        msg.textContent = picks[0].sido + " " + picks[0].sigungu + " 부근 " +
+          state.rows.length.toLocaleString() + "곳을 가까운 순으로 보여줍니다" +
+          (freeCount ? " (무료 " + freeCount.toLocaleString() + "곳)" : "") + ".";
         btn.textContent = "다시 찾기";
         btn.disabled = false;
         renderList();
