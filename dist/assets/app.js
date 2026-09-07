@@ -49,7 +49,9 @@
      광고를 닫는 순간 브라우저가 원래 이동을 이어서 수행하기 때문이다.
      새 탭으로 열면 광고에 가로채인 탭이 사라져 목적지로 가지 못한다. */
   function actionsHTML(row, index) {
-    var kakao = "https://map.kakao.com/link/to/" +
+    // link/to 는 카카오에 등록된 장소가 아니면 도착지가 안 채워지고
+    // 빈 길찾기 화면이 뜬다. link/map 은 좌표 그대로 핀을 찍어준다.
+    var kakao = "https://map.kakao.com/link/map/" +
       encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
     var google = "https://www.google.com/maps/dir/?api=1&destination=" + row.la + "," + row.lo;
     // 네이버는 좌표 링크 규격이 자주 바뀌어 주소 검색으로 보낸다.
@@ -58,8 +60,8 @@
     var naver = "https://map.naver.com/p/search/" +
       encodeURIComponent(row.ad || row.nm);
     // 가장 많이 쓰는 동선이라 카카오맵만 강조 버튼(.go)으로 둔다.
-    return '<a class="act go" href="' + kakao + '">카카오맵 길찾기</a>' +
-      '<a class="act" href="' + google + '">구글맵</a>' +
+    return '<a class="act go" href="' + kakao + '">카카오맵</a>' +
+      '<a class="act" href="' + google + '">구글맵 길찾기</a>' +
       '<a class="act" href="' + naver + '">네이버지도</a>' +
       (row.tel ? '<a class="act" href="tel:' + esc(row.tel) + '">전화 ' + esc(row.tel) + "</a>" : "") +
       (index != null ? '<button type="button" class="act" data-goto="' + index + '">목록에서 보기</button>' : "");
@@ -196,6 +198,8 @@
      화면 안에 있는 것만, 이미 놓인 라벨과 겹치지 않는 것만 골라 그린다.
      state.rows 가 이미 무료 → 요일별 → 싼 유료 순으로 정렬돼 있어서
      자리를 먼저 차지하는 쪽이 자연스럽게 무료와 저렴한 곳이 된다. */
+  var LABEL_MAX = 260;   // 한 화면에 그릴 글자 라벨 상한
+
   function declutter() {
     var bounds = state.map.getBounds().pad(0.2);
     var placed = [], labeled = [], dots = [];
@@ -208,15 +212,15 @@
 
       var pt = state.map.latLngToLayerPoint([r.la, r.lo]);
 
-      // 무료는 이 사이트의 존재 이유다. 겹치든 말든 무조건 글자로 보여준다.
-      // 겹침 때문에 점으로 내려가는 건 유료·요일별만 해당된다.
-      var clear = kindOf(r) === "free";
-      if (!clear) {
-        clear = labeled.length < 140;
-        for (var j = 0; clear && j < placed.length; j++) {
-          if (Math.abs(placed[j].x - pt.x) < 56 && Math.abs(placed[j].y - pt.y) < 22) {
-            clear = false;
-          }
+      // state.rows 가 무료 → 요일별 → 싼 유료 순이라, 앞에서부터 자리를
+      // 채우면 무료가 언제나 먼저 라벨을 가져간다. 유료에 밀리는 일은 없다.
+      // 겹치는 것까지 전부 글자로 그리면 제주처럼 무료가 1,300곳인 곳에서
+      // 글자가 뭉쳐 읽히지도 않고 지도가 버벅인다. 겹치면 점으로 남기고,
+      // 확대해서 자리가 생기면 그때 글자로 바뀐다.
+      var clear = labeled.length < LABEL_MAX;
+      for (var j = 0; clear && j < placed.length; j++) {
+        if (Math.abs(placed[j].x - pt.x) < 56 && Math.abs(placed[j].y - pt.y) < 22) {
+          clear = false;
         }
       }
       if (clear) {
@@ -230,6 +234,9 @@
     }
     return { labeled: labeled, dots: dots };
   }
+
+  // 점 수백 개를 DOM 으로 그리면 느리다. 캔버스 한 장에 그린다.
+  var dotRenderer = null;
 
   var DOT_COLOR = {
     free: "#1a7a5c", partly: "#c2820a", paid: "#2f5fb8", unknown: "#6b7280"
@@ -268,6 +275,7 @@
       var r = item.row, i = item.idx;
       var c = DOT_COLOR[kindOf(r)];
       return L.circleMarker([r.la, r.lo], {
+        renderer: dotRenderer,
         radius: 4, weight: 1, color: "#fff", fillColor: c, fillOpacity: 0.95
       }).bindPopup(popupHTML(r, i), { minWidth: 210, maxWidth: 260 });
     });
@@ -309,7 +317,9 @@
   function initMap() {
     var node = el("#map");
     if (!node || typeof L === "undefined") return;
-    state.map = L.map(node, { scrollWheelZoom: true }).setView([36.5, 127.8], 7);
+    state.map = L.map(node, { scrollWheelZoom: true, preferCanvas: true })
+      .setView([36.5, 127.8], 7);
+    dotRenderer = L.canvas({ padding: 0.3 });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
