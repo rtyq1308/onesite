@@ -31,12 +31,15 @@ SITE_NAME = "공짜맵"
 TODAY = datetime.date.today().isoformat()
 
 # 애드센스 - 값이 비면 광고 태그를 아예 넣지 않는다(승인 전 빈 ins 태그 방지).
-ADSENSE_CLIENT = os.environ.get("ADSENSE_CLIENT", "").strip()
+# 루트 도메인 itfinancelab.com 이 승인돼 있어 서브도메인은 별도 심사가 필요 없다.
+ADSENSE_CLIENT = os.environ.get("ADSENSE_CLIENT", "ca-pub-8832347985556850").strip()
 AD_SLOTS = {
-    "top": os.environ.get("ADSENSE_SLOT_TOP", "").strip(),
-    "feed": os.environ.get("ADSENSE_SLOT_FEED", "").strip(),
-    "bottom": os.environ.get("ADSENSE_SLOT_BOTTOM", "").strip(),
+    "top": os.environ.get("ADSENSE_SLOT_TOP", "7312787841").strip(),        # 지도 아래
+    "feed": os.environ.get("ADSENSE_SLOT_FEED", "2367582929").strip(),      # 목록 5번째 뒤
+    "bottom": os.environ.get("ADSENSE_SLOT_BOTTOM", "1054501259").strip(),  # 목록 끝
 }
+WRITE_ADS_TXT = os.environ.get("WRITE_ADS_TXT", "").strip() not in ("", "0", "false")
+
 # 이만큼도 안 되는 지역은 색인 제외 + 광고 미노출 (빈약한 콘텐츠 정책 회피).
 THIN_PAGE_MIN = 3
 
@@ -730,7 +733,12 @@ def write_support_files(urls):
     with open(os.path.join(DIST, "_headers"), "w", encoding="utf-8") as fp:
         fp.write("/assets/*\n  Cache-Control: public, max-age=604800\n"
                  "/data/*\n  Cache-Control: public, max-age=21600\n")
-    if ADSENSE_CLIENT.startswith("ca-pub-"):
+    # ads.txt 는 기본적으로 만들지 않는다.
+    # 이 사이트는 서브도메인이고, 애드센스는 루트 도메인(itfinancelab.com)의
+    # ads.txt 로 서브도메인까지 판정한다. 루트가 이미 승인된 상태라 서브도메인에
+    # 별도 파일을 두면 오히려 충돌 소지가 있다.
+    # 독립 도메인으로 옮길 때만 WRITE_ADS_TXT=1 로 켠다.
+    if WRITE_ADS_TXT and ADSENSE_CLIENT.startswith("ca-pub-"):
         with open(os.path.join(DIST, "ads.txt"), "w", encoding="utf-8") as fp:
             fp.write("google.com, %s, DIRECT, f08c47fec0942fa0\n"
                      % ADSENSE_CLIENT.replace("ca-", ""))
