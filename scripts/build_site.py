@@ -485,7 +485,7 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
         page = page.replace(key, value)
     full = os.path.join(DIST, path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
-    with open(full, "w", encoding="utf-8") as fp:
+    with open(full, "w", encoding="utf-8", newline="\n") as fp:
         fp.write(page)
 
 
@@ -518,7 +518,7 @@ def build_region_json(sido, sigungu, rows):
     }
     path = os.path.join(DIST, "data", sido, sigungu + ".json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as fp:
+    with open(path, "w", encoding="utf-8", newline="\n") as fp:
         json.dump(payload, fp, ensure_ascii=False, separators=(",", ":"))
 
 
@@ -724,13 +724,13 @@ def write_support_files(urls):
     entries = "".join(
         "<url><loc>%s</loc><lastmod>%s</lastmod></url>" % (loc, TODAY) for loc in urls
     )
-    with open(os.path.join(DIST, "sitemap.xml"), "w", encoding="utf-8") as fp:
+    with open(os.path.join(DIST, "sitemap.xml"), "w", encoding="utf-8", newline="\n") as fp:
         fp.write('<?xml version="1.0" encoding="UTF-8"?>'
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                  + entries + "</urlset>")
-    with open(os.path.join(DIST, "robots.txt"), "w", encoding="utf-8") as fp:
+    with open(os.path.join(DIST, "robots.txt"), "w", encoding="utf-8", newline="\n") as fp:
         fp.write("User-agent: *\nAllow: /\nSitemap: %s/sitemap.xml\n" % SITE_URL)
-    with open(os.path.join(DIST, "_headers"), "w", encoding="utf-8") as fp:
+    with open(os.path.join(DIST, "_headers"), "w", encoding="utf-8", newline="\n") as fp:
         fp.write("/assets/*\n  Cache-Control: public, max-age=604800\n"
                  "/data/*\n  Cache-Control: public, max-age=21600\n")
     # ads.txt 는 기본적으로 만들지 않는다.
@@ -739,7 +739,7 @@ def write_support_files(urls):
     # 별도 파일을 두면 오히려 충돌 소지가 있다.
     # 독립 도메인으로 옮길 때만 WRITE_ADS_TXT=1 로 켠다.
     if WRITE_ADS_TXT and ADSENSE_CLIENT.startswith("ca-pub-"):
-        with open(os.path.join(DIST, "ads.txt"), "w", encoding="utf-8") as fp:
+        with open(os.path.join(DIST, "ads.txt"), "w", encoding="utf-8", newline="\n") as fp:
             fp.write("google.com, %s, DIRECT, f08c47fec0942fa0\n"
                      % ADSENSE_CLIENT.replace("ca-", ""))
 
@@ -838,7 +838,7 @@ def main():
         urls.append("%s/%s/" % (SITE_URL, sido))
         index["sido"].append(sido_entry)
 
-    with open(os.path.join(DIST, "data", "index.json"), "w", encoding="utf-8") as fp:
+    with open(os.path.join(DIST, "data", "index.json"), "w", encoding="utf-8", newline="\n") as fp:
         json.dump(index, fp, ensure_ascii=False, separators=(",", ":"))
 
     top_regions = sorted(
