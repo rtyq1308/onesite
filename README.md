@@ -151,6 +151,43 @@ GitHub에 올린 뒤 Pages에서 저장소를 선택하고:
 - 지도 타일은 OpenStreetMap(무료·키 불필요). 카카오맵으로 바꾸려면 JS 키를 발급받아
   도메인 제한을 걸고 `app.js`의 `initMap()`만 교체하면 된다.
 
+---
+
+## 남은 일 (2026-09-08 기준)
+
+### 반드시 해야 하는 것
+
+- [ ] **GitHub Secrets 2개 등록** — 안 하면 매월 자동 갱신이 실패한다
+  `https://github.com/rtyq1308/onesite/settings/secrets/actions`
+  | Name | 값이 있는 파일 |
+  |---|---|
+  | `DATA_GO_KR_KEY` | `data/.key` |
+  | `SEOUL_API_KEY` | `data/.seoul.key` |
+  등록 후 Actions 탭에서 `Run workflow` 로 한 번 돌려 초록불 확인.
+
+### 검색엔진 등록 (사이트 쪽 준비는 끝남)
+
+- [ ] 구글 [서치콘솔](https://search.google.com/search-console)
+      소유확인 메타태그는 이미 들어가 있음 → 사이트맵 `sitemap.xml` 제출
+- [ ] 네이버 [서치어드바이저](https://searchadvisor.naver.com)
+      소유확인 파일 `naver767d4aa0163784c086c58eba454d9010.html` 배치 완료
+      → 사이트맵 `sitemap.xml` + RSS `rss.xml` 제출 (`/rss` 아니라 `/rss.xml`)
+- [ ] 다음 [검색등록](https://register.search.daum.net/index.daum)
+      소유확인 불필요. 제목·품목·디렉토리만 입력하면 5일 내 심사
+
+### 정리해도 되는 것
+
+- [ ] Cloudflare 의 Workers 앱 `parking` 삭제 (Pages 로 옮겨서 안 쓴다)
+
+### 알아두면 좋은 것
+
+- 애드센스 전면광고(Vignette)가 길찾기 클릭을 가로채면 이동이 끊긴다.
+  거슬리면 애드센스 → 광고 → 사이트별 자동광고에서 전면광고만 끄면 된다.
+- 서울은 표준데이터에 15곳뿐이라 열린데이터광장을 따로 붙였다.
+  다른 광역시도 비슷하게 부족하면 같은 방식으로 보충할 수 있다.
+- 공중화장실은 2025년 2월부터 좌표 제공이 끊겨서 뺐다.
+  다시 넣으려면 카카오 로컬 API 로 주소를 좌표로 바꿔야 한다.
+
 ## 데이터 출처
 
 두 곳을 합쳐 쓴다. 서울 데이터는 표준데이터와 같은 필드명으로 변환해 저장하므로
