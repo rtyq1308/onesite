@@ -11,6 +11,7 @@
 """
 
 import datetime
+import email.utils
 import hashlib
 import html
 import json
@@ -19,6 +20,7 @@ import re
 import shutil
 import time
 import statistics
+import urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW_DIR = os.path.join(ROOT, "data", "raw")
@@ -791,9 +793,44 @@ def build_home(index, total, total_slots, top_regions, free_total):
     render("index.html", title, desc, SITE_URL + "/", body, "", MAP_HEAD, scripts)
 
 
+def esc_url(url):
+    """사이트맵·RSS 규격은 주소를 URL 이스케이프하도록 요구한다.
+    주소에 한글이 들어가므로 그대로 두면 검증에서 거절될 수 있다."""
+    return urllib.parse.quote(url, safe=":/?#[]@!$&'()*+,;=~-._")
+
+
+def write_rss(items):
+    """네이버 웹마스터도구는 사이트맵과 별개로 RSS 도 받는다.
+    글이 쌓이는 사이트가 아니므로, 주차장이 많은 지역 페이지를 항목으로 낸다."""
+    now = email.utils.formatdate(usegmt=True)
+    entries = []
+    for title, link, desc in items[:100]:
+        entries.append(
+            "<item>"
+            "<title>%s</title>"
+            "<link>%s</link>"
+            "<guid isPermaLink=\"true\">%s</guid>"
+            "<description>%s</description>"
+            "<pubDate>%s</pubDate>"
+            "</item>" % (e(title), esc_url(link), esc_url(link), e(desc), now)
+        )
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>'
+           '<rss version="2.0"><channel>'
+           "<title>%s</title>"
+           "<link>%s/</link>"
+           "<description>전국 주차장의 무료 여부와 30분 요금을 지도에서 비교합니다.</description>"
+           "<language>ko</language>"
+           "<lastBuildDate>%s</lastBuildDate>"
+           "%s</channel></rss>"
+           ) % (e("%s - 전국 무료주차장·주차요금 지도" % SITE_NAME), SITE_URL, now, "".join(entries))
+    with open(os.path.join(DIST, "rss.xml"), "w", encoding="utf-8", newline="\n") as fp:
+        fp.write(xml)
+
+
 def write_support_files(urls):
     entries = "".join(
-        "<url><loc>%s</loc><lastmod>%s</lastmod></url>" % (loc, TODAY) for loc in urls
+        "<url><loc>%s</loc><lastmod>%s</lastmod></url>" % (e(esc_url(loc)), TODAY)
+        for loc in urls
     )
     with open(os.path.join(DIST, "sitemap.xml"), "w", encoding="utf-8", newline="\n") as fp:
         fp.write('<?xml version="1.0" encoding="UTF-8"?>'
@@ -889,6 +926,7 @@ def main():
         by_sido.setdefault(sido, []).append((sigungu, bucket))
 
     urls = [SITE_URL + "/"]
+    feed_items = []
     index = {"updated": TODAY, "sido": []}
     total_slots = sum(r["cp"] for r in rows)
 
@@ -908,6 +946,14 @@ def main():
             url_path = build_region_page(sido, sigungu, bucket, siblings)
             if url_path:  # 항목이 너무 적은 지역은 noindex라 사이트맵에서도 뺀다
                 urls.append(SITE_URL + "/" + url_path)
+                free_here = sum(1 for r in bucket if r["fr"])
+                feed_items.append((
+                    len(bucket),
+                    "%s %s 무료·유료 주차장 %d곳" % (SIDO_SHORT.get(sido, sido), sigungu, len(bucket)),
+                    SITE_URL + "/" + url_path,
+                    "상시 무료 %d곳을 포함한 주차장 %d곳의 위치와 30분 요금."
+                    % (free_here, len(bucket)),
+                ))
             centre = [round(statistics.median(r["la"] for r in bucket), 5),
                       round(statistics.median(r["lo"] for r in bucket), 5)]
             sido_entry["sgg"].append({"nm": sigungu, "p": len(bucket), "c": centre})
@@ -928,7 +974,11 @@ def main():
     build_privacy_page()
     urls.append(SITE_URL + "/privacy/")
     write_support_files(urls)
-    print("페이지 %d개 생성 완료 -> %s" % (len(urls), DIST))
+    # RSS 는 주차장이 많은 지역부터. 네이버가 사이트맵과 별개로 받는다.
+    feed_items.sort(key=lambda x: -x[0])
+    write_rss([(t, l, d) for _n, t, l, d in feed_items])
+    print("페이지 %d개 생성 완료 (RSS %d건) -> %s"
+          % (len(urls), min(len(feed_items), 100), DIST))
 
 
 if __name__ == "__main__":
