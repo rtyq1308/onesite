@@ -457,3 +457,14 @@ main.wrap code {
 
 /* 내 주변 찾기 + 공유하기 나란히 */
 .cta { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+
+/* 카카오 브랜드 버튼 (카카오맵 / 카카오톡 공유) */
+.btn.kakao,
+.act.kakao {
+  background: linear-gradient(#ffe94d, #fee500);
+  border-color: #e0c800;
+  color: #191919;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .18), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.btn.kakao:hover,
+.act.kakao:hover { border-color: #c9b400; filter: brightness(1.03); }

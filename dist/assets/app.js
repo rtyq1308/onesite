@@ -59,8 +59,8 @@
     // 검색에 안 걸려 빈 화면이 뜬다. 주소는 지번·도로명 모두 정확히 잡힌다.
     var naver = "https://map.naver.com/p/search/" +
       encodeURIComponent(row.ad || row.nm);
-    // 가장 많이 쓰는 동선이라 카카오맵만 강조 버튼(.go)으로 둔다.
-    return '<a class="act go" href="' + kakao + '">카카오맵</a>' +
+    // 카카오 계열은 브랜드 노란색(.kakao)으로 구분한다.
+    return '<a class="act kakao" href="' + kakao + '">카카오맵</a>' +
       '<a class="act" href="' + google + '">구글맵 길찾기</a>' +
       '<a class="act" href="' + naver + '">네이버지도</a>' +
       (row.tel ? '<a class="act" href="tel:' + esc(row.tel) + '">전화 ' + esc(row.tel) + "</a>" : "") +
@@ -486,6 +486,18 @@
     var buttons = document.querySelectorAll("[data-share]");
     if (!buttons.length) return;
 
+    // 카카오톡 공유는 SDK 와 앱 키가 둘 다 있어야 동작한다.
+    // 준비되지 않으면 버튼을 계속 숨겨 눌러도 아무 일 없는 상황을 막는다.
+    if (CFG.kakaoKey && window.Kakao) {
+      try {
+        if (!Kakao.isInitialized()) Kakao.init(CFG.kakaoKey);
+        Array.prototype.forEach.call(
+          document.querySelectorAll('[data-share="kakao"]'),
+          function (btn) { btn.hidden = false; }
+        );
+      } catch (err) { /* 키가 잘못됐거나 도메인 미등록 - 버튼은 숨긴 채로 둔다 */ }
+    }
+
     // 네이티브 공유 시트는 지원하는 기기(주로 모바일)에서만 노출한다.
     // 여기서 카카오톡·문자·인스타그램이 모두 잡히므로 별도 SDK가 필요 없다.
     if (navigator.share) {
@@ -505,6 +517,20 @@
         var title = document.title;
 
         switch (btn.dataset.share) {
+          case "kakao":
+            // 이미지가 없는 사이트라 text 템플릿을 쓴다. feed 는 썸네일이 필수다.
+            try {
+              Kakao.Share.sendDefault({
+                objectType: "text",
+                text: title,
+                link: { mobileWebUrl: prettyUrl, webUrl: prettyUrl }
+              });
+            } catch (err) {
+              copyLink(prettyUrl).then(function () {
+                toast("카카오톡 공유에 실패해 주소를 복사했습니다");
+              }).catch(function () { });
+            }
+            break;
           case "native":
             navigator.share({ title: title, url: prettyUrl }).catch(function () { });
             break;

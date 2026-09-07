@@ -340,6 +340,13 @@ def e(text):
     return html.escape(str(text), quote=True)
 
 
+def kakao_sdk():
+    if not KAKAO_JS_KEY:
+        return ""
+    return ('<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js" '
+            'crossorigin="anonymous"></script>')
+
+
 def adsense_head():
     if not ADSENSE_CLIENT:
         return ""
@@ -366,6 +373,8 @@ def ad_unit(kind, allowed=True):
 def share_bar(prompt):
     """공유 버튼. 주소·제목은 JS가 location.href 에서 읽으므로 도메인이 바뀌어도 그대로 동작한다."""
     buttons = [
+        # SDK 가 준비돼야 동작하므로 JS 가 켤 때까지 숨겨둔다
+        ("kakao", "카카오톡 공유", " hidden"),
         ("native", "공유하기", " hidden"),   # navigator.share 가 있을 때만 JS가 켠다
         ("copy", "주소 복사", ""),
         ("naver", "네이버 블로그", ""),
@@ -373,7 +382,8 @@ def share_bar(prompt):
         ("facebook", "페이스북", ""),
     ]
     tags = "".join(
-        '<button type="button" class="btn" data-share="%s"%s>%s</button>' % (key, extra, label)
+        '<button type="button" class="btn%s" data-share="%s"%s>%s</button>'
+        % (" kakao" if key == "kakao" else "", key, extra, label)
         for key, label, extra in buttons
     )
     return ('<section class="share"><p class="share-label">%s</p>'
@@ -434,6 +444,11 @@ CONTACT_EMAIL = env("CONTACT_EMAIL", "rtyq1308@gmail.com")
 # 검색엔진 소유권 확인 메타태그. 값이 비면 태그를 넣지 않는다.
 GOOGLE_VERIFY = env("GOOGLE_SITE_VERIFICATION", "ek4vpJNgTIsiM8ANiutfJvFiyOw_L92I-BwNjx0U4CM")
 NAVER_VERIFY = env("NAVER_SITE_VERIFICATION")
+
+# 카카오톡 공유용 JavaScript 앱 키. 도메인 제한이 걸리는 공개 키라 노출돼도 된다.
+# https://developers.kakao.com 앱 만들기 -> 앱 키 -> JavaScript 키
+# 값이 없으면 카카오톡 공유 버튼을 아예 렌더링하지 않는다.
+KAKAO_JS_KEY = env("KAKAO_JS_KEY")
 
 
 def verification_tags():
@@ -551,7 +566,7 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
         ("{{BODY}}", body), ("{{ROOT}}", root),
         ("{{HEAD}}", adsense_head() + head), ("{{ROBOTS}}", robots),
         ("{{VERIFY}}", verification_tags()),
-        ("{{SCRIPTS}}", scripts), ("{{UPDATED}}", TODAY),
+        ("{{SCRIPTS}}", kakao_sdk() + scripts), ("{{UPDATED}}", TODAY),
     ]:
         page = page.replace(key, value)
 
@@ -669,6 +684,7 @@ def build_region_page(sido, sigungu, rows, siblings):
 
     config = {
         "mode": "region",
+        "kakaoKey": KAKAO_JS_KEY,
         "dataUrl": "../../data/%s/%s.json" % (sido, sigungu),
         "ad": {"client": ADSENSE_CLIENT, "slot": AD_SLOTS["feed"]}
         if (rich and ADSENSE_CLIENT and AD_SLOTS["feed"]) else None,
@@ -715,9 +731,10 @@ def build_sido_page(sido, siblings, total):
             {"@type": "ListItem", "position": 2, "name": sido, "item": "%s/%s/" % (SITE_URL, sido)},
         ],
     }
-    scripts = ('<script>window.FREEMAP={mode:"static"};</script>'
-               '<script src="../assets/app.js"></script>'
-               '<script type="application/ld+json">%s</script>'
+    scripts = ('<script>window.FREEMAP={mode:"static",kakaoKey:%s};</script>'
+               % json.dumps(KAKAO_JS_KEY)
+               + '<script src="../assets/app.js"></script>'
+               + '<script type="application/ld+json">%s</script>'
                % json.dumps(breadcrumb, ensure_ascii=False))
     render(os.path.join(sido, "index.html"), title, desc,
            "%s/%s/" % (SITE_URL, sido), body, "../", scripts=scripts)
@@ -795,6 +812,7 @@ def build_home(index, total, total_slots, top_regions, free_total):
 
     config = {
         "mode": "home", "indexUrl": "data/index.json", "dataBase": "data/",
+        "kakaoKey": KAKAO_JS_KEY,
         "ad": {"client": ADSENSE_CLIENT, "slot": AD_SLOTS["feed"]}
         if (ADSENSE_CLIENT and AD_SLOTS["feed"]) else None,
     }
