@@ -517,7 +517,12 @@ def build_privacy_page():
 
 
 def list_block():
-    return '<div id="list" class="list"></div><p id="more" class="note"></p>'
+    return ('<div class="listbar">'
+            '<button type="button" class="btn" id="only-free" aria-pressed="false">'
+            '가까운 무료 주차장 우선으로 확인하기</button>'
+            '<span class="note" id="list-count"></span>'
+            "</div>"
+            '<div id="list" class="list"></div><p id="more" class="note"></p>')
 
 
 def stat_block(pairs):

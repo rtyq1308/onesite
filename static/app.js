@@ -4,7 +4,8 @@
   "use strict";
 
   var CFG = window.FREEMAP || {};
-  var state = { rows: [], map: null, layer: null, origin: null, adPlaced: false };
+  var state = { all: [], rows: [], map: null, layer: null,
+              origin: null, adPlaced: false, onlyFree: false };
 
   /* ---------- 유틸 ---------- */
 
@@ -111,6 +112,34 @@
       (kind === "partly" ? '<p class="warn-note">평일에는 요금을 받습니다</p>' : "") +
       '<div class="links">' + actionsHTML(row, null) + "</div>" +
       "</article>";
+  }
+
+  /* '무료만' 필터. 유료와 요일별(평일 유료)을 모두 걸러 상시 무료만 남긴다. */
+  function applyFilter() {
+    state.rows = state.onlyFree
+      ? state.all.filter(function (r) { return r.fr; })
+      : state.all;
+
+    var label = el("#list-count");
+    if (label) {
+      label.textContent = state.onlyFree
+        ? "무료 " + state.rows.length.toLocaleString() + "곳만 보는 중"
+        : "전체 " + state.all.length.toLocaleString() + "곳";
+    }
+    renderList();
+  }
+
+  function bindFilter() {
+    var btn = el("#only-free");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      state.onlyFree = !state.onlyFree;
+      btn.setAttribute("aria-pressed", String(state.onlyFree));
+      btn.textContent = state.onlyFree
+        ? "전체 주차장 보기"
+        : "가까운 무료 주차장 우선으로 확인하기";
+      applyFilter();
+    });
   }
 
   function renderList() {
@@ -309,8 +338,8 @@
   function startRegionPage() {
     initMap();
     getJSON(CFG.dataUrl).then(function (data) {
-      state.rows = expand(data.p);
-      renderList();
+      state.all = expand(data.p);
+      applyFilter();
     }).catch(function (err) {
       el("#list").innerHTML = '<p class="empty">데이터를 불러오지 못했습니다. (' + esc(err.message) + ")</p>";
     });
@@ -366,16 +395,16 @@
           r._km = distanceKm(state.origin[0], state.origin[1], r.la, r.lo);
         });
         merged.sort(function (a, b) { return a._km - b._km; });
-        state.rows = merged.slice(0, 300);
+        state.all = merged.slice(0, 300);
 
         el("#nearby-result").hidden = false;
-        var freeCount = state.rows.filter(function (r) { return r.fr; }).length;
+        applyFilter();
+        var freeCount = state.all.filter(function (r) { return r.fr; }).length;
         msg.textContent = picks[0].sido + " " + picks[0].sigungu + " 부근 " +
           state.rows.length.toLocaleString() + "곳을 가까운 순으로 보여줍니다" +
           (freeCount ? " (무료 " + freeCount.toLocaleString() + "곳)" : "") + ".";
         btn.textContent = "다시 찾기";
         btn.disabled = false;
-        renderList();
         if (state.map) {
           L.circleMarker(state.origin, {
             radius: 8, color: "#d94848", fillColor: "#d94848", fillOpacity: 0.9
@@ -529,6 +558,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     bindShare();
     bindGoto();
+    bindFilter();
     if (CFG.mode === "region") startRegionPage();
     else if (CFG.mode === "home") startHomePage();
 
