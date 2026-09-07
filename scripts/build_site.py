@@ -454,7 +454,9 @@ NAVER_VERIFY = env("NAVER_SITE_VERIFICATION")
 # 카카오톡 공유용 JavaScript 앱 키. 도메인 제한이 걸리는 공개 키라 노출돼도 된다.
 # https://developers.kakao.com 앱 만들기 -> 앱 키 -> JavaScript 키
 # 값이 없으면 카카오톡 공유 버튼을 아예 렌더링하지 않는다.
-KAKAO_JS_KEY = env("KAKAO_JS_KEY")
+# REST API 키나 네이티브 앱 키가 아니라 JavaScript 키를 넣어야 한다.
+# 도메인이 등록된 곳에서만 동작하므로 HTML 에 노출돼도 된다.
+KAKAO_JS_KEY = env("KAKAO_JS_KEY", "e4aea89052f4eee41ab344a66531fddd")
 
 
 def verification_tags():
