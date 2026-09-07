@@ -317,7 +317,8 @@ PAGE = """<!doctype html>
 {{BODY}}
 </main>
 <footer class="site"><div class="wrap">
-자료 출처: 공공데이터포털 「전국주차장정보표준데이터」, 서울 열린데이터광장 (갱신 {{UPDATED}})<br>
+자료 출처: 공공데이터포털 「전국주차장정보표준데이터」, 서울 열린데이터광장<br>
+매월 자동으로 다시 받아 갱신합니다. 마지막 갱신 {{UPDATED}}<br>
 요금과 운영시간은 현장 사정에 따라 달라질 수 있으니 방문 전 확인하세요.<br>
 <a href="{{ROOT}}privacy/">개인정보처리방침</a>
 </div></footer>
@@ -749,7 +750,7 @@ def build_home(index, total, total_slots, top_regions, free_total):
           "상시 무료가 %s곳입니다.</p>" % (count_text, format(free_total, ","))
         + stat_block([("무료주차장", format(free_total, ",") + "곳"),
                       ("전체 주차장", count_text + "곳"),
-                      ("갱신일", TODAY)])
+                      ("갱신일 · 매월 자동 갱신", TODAY)])
         + '<p class="cta"><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button>'
           '<button type="button" class="btn" data-share="quick">공유하기</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
