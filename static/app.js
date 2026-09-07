@@ -4,9 +4,6 @@
   "use strict";
 
   var CFG = window.FREEMAP || {};
-  var COLOR = "#1f7a5a";          // 상시 무료
-  var COLOR_PARTLY = "#c2820a";   // 특정 요일만 무료
-
   var state = { rows: [], map: null, layer: null, origin: null, adPlaced: false };
 
   /* ---------- 유틸 ---------- */
@@ -55,7 +52,8 @@
       encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
     var google = "https://www.google.com/maps/dir/?api=1&destination=" + row.la + "," + row.lo;
     var naver = "https://map.naver.com/p/search/" + encodeURIComponent(row.nm);
-    return '<a class="act" href="' + kakao + '">카카오맵 길찾기</a>' +
+    // 가장 많이 쓰는 동선이라 카카오맵만 강조 버튼(.go)으로 둔다.
+    return '<a class="act go" href="' + kakao + '">카카오맵 길찾기</a>' +
       '<a class="act" href="' + google + '">구글맵</a>' +
       '<a class="act" href="' + naver + '">네이버지도</a>' +
       (row.tel ? '<a class="act" href="tel:' + esc(row.tel) + '">전화 ' + esc(row.tel) + "</a>" : "") +
@@ -140,9 +138,8 @@
     if (!rows.length) return;
 
     var markers = rows.map(function (r, i) {
-      // 상시 무료와 요일별 무료를 지도에서도 색으로 구분한다.
+      // 상시 무료는 초록, 요일별 무료는 주황 박스로 구분한다.
       var partly = !!(r.fl && r.fl.length);
-      var color = partly ? COLOR_PARTLY : COLOR;
       var when = partly
         ? '<span class="pop-warn">' + esc(r.fl.join(", ")) + " · 평일 유료</span>"
         : '<span class="pop-free">상시 무료</span>';
@@ -160,9 +157,18 @@
         '<span class="pop-acts">' + actionsHTML(r, i < 300 ? i : null) + "</span>" +
         "</div>";
 
-      return L.circleMarker([r.la, r.lo], {
-        radius: 7, weight: 2, color: color, fillColor: color, fillOpacity: 0.55
-      }).bindPopup(popup, { minWidth: 210, maxWidth: 260 });
+      // 원 대신 글자 박스. 상시 무료는 "무료", 요일별은 그 요일을 그대로 보여준다.
+      var label = partly
+        ? r.fl[0].replace(" 무료개방", "").replace(" 무료", "")
+        : "무료";
+      var icon = L.divIcon({
+        className: "pin" + (partly ? " pin-partly" : ""),
+        html: "<span>" + esc(label) + "</span>",
+        iconSize: null
+      });
+
+      return L.marker([r.la, r.lo], { icon: icon, riseOnHover: true })
+        .bindPopup(popup, { minWidth: 210, maxWidth: 260 });
     });
     state.layer = L.layerGroup(markers).addTo(state.map);
 
@@ -184,6 +190,20 @@
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(state.map);
+
+    // Leaflet 은 만들어질 때의 크기를 기억한다. 휴대폰을 가로로 눕히면 그 값이
+    // 어긋나 타일이 엉뚱하게 깔리므로, 크기가 바뀌면 다시 계산하게 한다.
+    var resizeTimer;
+    function refit() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        if (!state.map) return;
+        state.map.invalidateSize();
+        renderMarkers();
+      }, 200);
+    }
+    window.addEventListener("resize", refit);
+    window.addEventListener("orientationchange", refit);
   }
 
   /* ---------- 페이지별 진입 ---------- */
