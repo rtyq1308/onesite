@@ -29,19 +29,29 @@ STATIC_DIR = os.path.join(ROOT, "static")
 PUBLIC_DIR = os.path.join(ROOT, "public")
 DIST = os.path.join(ROOT, "dist")
 
+def env(name, default=""):
+    """GitHub Actions 는 등록하지 않은 vars 를 '빈 문자열'로 넘긴다.
+    os.environ.get 의 기본값은 그때 적용되지 않아서, 아래 기본값들이
+    통째로 빈 값으로 덮여버린다(주소가 깨지고 광고가 사라진다).
+    값이 비어 있으면 없는 것으로 본다."""
+    value = os.environ.get(name, "")
+    value = value.strip() if value else ""
+    return value or default
+
+
 # canonical·사이트맵은 빌드 시점에 고정된다. 기본값을 실제 도메인으로 둬서
 # 로컬에서 다시 빌드해도 주소가 어긋나지 않게 한다. 환경변수로 덮어쓸 수 있다.
-SITE_URL = os.environ.get("SITE_URL", "https://parking.itfinancelab.com").rstrip("/")
+SITE_URL = env("SITE_URL", "https://parking.itfinancelab.com").rstrip("/")
 SITE_NAME = "공짜맵"
 TODAY = datetime.date.today().isoformat()
 
 # 애드센스 - 값이 비면 광고 태그를 아예 넣지 않는다(승인 전 빈 ins 태그 방지).
 # 루트 도메인 itfinancelab.com 이 승인돼 있어 서브도메인은 별도 심사가 필요 없다.
-ADSENSE_CLIENT = os.environ.get("ADSENSE_CLIENT", "ca-pub-8832347985556850").strip()
+ADSENSE_CLIENT = env("ADSENSE_CLIENT", "ca-pub-8832347985556850")
 AD_SLOTS = {
-    "top": os.environ.get("ADSENSE_SLOT_TOP", "7312787841").strip(),        # 지도 아래
-    "feed": os.environ.get("ADSENSE_SLOT_FEED", "2367582929").strip(),      # 목록 5번째 뒤
-    "bottom": os.environ.get("ADSENSE_SLOT_BOTTOM", "1054501259").strip(),  # 목록 끝
+    "top": env("ADSENSE_SLOT_TOP", "7312787841"),        # 지도 아래
+    "feed": env("ADSENSE_SLOT_FEED", "2367582929"),      # 목록 5번째 뒤
+    "bottom": env("ADSENSE_SLOT_BOTTOM", "1054501259"),  # 목록 끝
 }
 WRITE_ADS_TXT = os.environ.get("WRITE_ADS_TXT", "").strip() not in ("", "0", "false")
 
@@ -418,12 +428,11 @@ def faq_ld():
 
 
 # 개인정보처리방침에 공개되는 문의처. 애드센스 승인 필수 항목이다.
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "rtyq1308@gmail.com").strip()
+CONTACT_EMAIL = env("CONTACT_EMAIL", "rtyq1308@gmail.com")
 
 # 검색엔진 소유권 확인 메타태그. 값이 비면 태그를 넣지 않는다.
-GOOGLE_VERIFY = os.environ.get(
-    "GOOGLE_SITE_VERIFICATION", "ek4vpJNgTIsiM8ANiutfJvFiyOw_L92I-BwNjx0U4CM").strip()
-NAVER_VERIFY = os.environ.get("NAVER_SITE_VERIFICATION", "").strip()
+GOOGLE_VERIFY = env("GOOGLE_SITE_VERIFICATION", "ek4vpJNgTIsiM8ANiutfJvFiyOw_L92I-BwNjx0U4CM")
+NAVER_VERIFY = env("NAVER_SITE_VERIFICATION")
 
 
 def verification_tags():
