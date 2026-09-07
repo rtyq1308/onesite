@@ -233,6 +233,7 @@ PAGE = """<!doctype html>
 <meta property="og:title" content="{{TITLE}}">
 <meta property="og:description" content="{{DESC}}">
 <meta property="og:url" content="{{CANONICAL}}">
+{{VERIFY}}
 <meta property="og:site_name" content="공짜맵">
 <meta property="og:locale" content="ko_KR">
 {{ROBOTS}}
@@ -360,6 +361,20 @@ def faq_ld():
 # 개인정보처리방침에 공개되는 문의처. 애드센스 승인 필수 항목이다.
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "rtyq1308@gmail.com").strip()
 
+# 검색엔진 소유권 확인 메타태그. 값이 비면 태그를 넣지 않는다.
+GOOGLE_VERIFY = os.environ.get(
+    "GOOGLE_SITE_VERIFICATION", "ek4vpJNgTIsiM8ANiutfJvFiyOw_L92I-BwNjx0U4CM").strip()
+NAVER_VERIFY = os.environ.get("NAVER_SITE_VERIFICATION", "").strip()
+
+
+def verification_tags():
+    tags = []
+    if GOOGLE_VERIFY:
+        tags.append('<meta name="google-site-verification" content="%s">' % e(GOOGLE_VERIFY))
+    if NAVER_VERIFY:
+        tags.append('<meta name="naver-site-verification" content="%s">' % e(NAVER_VERIFY))
+    return "".join(tags)
+
 # 애드센스 승인 필수 요건. 내용은 이 사이트가 실제로 하는 일과 정확히 일치해야 한다.
 PRIVACY_SECTIONS = [
     ("수집하는 개인정보", [
@@ -461,6 +476,7 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
         ("{{TITLE}}", title), ("{{DESC}}", desc), ("{{CANONICAL}}", canonical),
         ("{{BODY}}", body), ("{{ROOT}}", root),
         ("{{HEAD}}", adsense_head() + head), ("{{ROBOTS}}", robots),
+        ("{{VERIFY}}", verification_tags()),
         ("{{SCRIPTS}}", scripts), ("{{UPDATED}}", TODAY),
     ]:
         page = page.replace(key, value)
