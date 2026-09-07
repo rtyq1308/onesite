@@ -305,6 +305,12 @@ PAGE = """<!doctype html>
 <meta property="og:site_name" content="공짜맵">
 <meta property="og:locale" content="ko_KR">
 {{ROBOTS}}
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1a7a5c">
+<link rel="icon" href="/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="공짜맵">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="{{ROOT}}assets/style.css">
 {{HEAD}}
 </head>
@@ -769,7 +775,8 @@ def build_home(index, total, total_slots, top_regions, free_total):
                       ("전체 주차장", count_text + "곳"),
                       ("갱신일 · 매월 자동 갱신", TODAY)])
         + '<p class="cta"><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button>'
-          '<button type="button" class="btn" data-share="quick">공유하기</button></p>'
+          '<button type="button" class="btn" data-share="quick">공유하기</button>'
+          '<button type="button" class="btn" id="install-app" hidden>홈 화면에 추가</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
         + '<div id="map"></div>'
         # 지역 페이지와 같은 이유로 공유를 목록 앞에 둔다.

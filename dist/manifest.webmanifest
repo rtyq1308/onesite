@@ -1,0 +1,17 @@
+{
+  "name": "공짜맵 - 전국 무료주차장·주차요금 지도",
+  "short_name": "공짜맵",
+  "description": "전국 주차장의 무료 여부와 30분 요금을 지도에서 비교합니다.",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef1f5",
+  "theme_color": "#1a7a5c",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

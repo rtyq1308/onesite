@@ -595,10 +595,63 @@
     });
   }
 
+  /* ---------- 홈 화면에 추가 ---------- */
+
+  var installPrompt = null;
+
+  function isStandalone() {
+    return window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+  }
+
+  function bindInstall() {
+    var btn = el("#install-app");
+    if (!btn || isStandalone()) return;   // 이미 설치했으면 권하지 않는다
+
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    // 안드로이드·크롬은 설치 가능해지면 이 이벤트를 준다.
+    window.addEventListener("beforeinstallprompt", function (ev) {
+      ev.preventDefault();
+      installPrompt = ev;
+      btn.hidden = false;
+    });
+
+    // iOS 사파리에는 설치 API 가 없다. 방법을 알려주는 수밖에 없다.
+    if (isIOS) btn.hidden = false;
+
+    btn.addEventListener("click", function () {
+      if (installPrompt) {
+        installPrompt.prompt();
+        installPrompt.userChoice.then(function (res) {
+          if (res && res.outcome === "accepted") btn.hidden = true;
+          installPrompt = null;
+        });
+      } else if (isIOS) {
+        toast("공유 버튼 → '홈 화면에 추가' 를 눌러주세요");
+      } else {
+        toast("브라우저 메뉴에서 '홈 화면에 추가' 를 눌러주세요");
+      }
+    });
+
+    window.addEventListener("appinstalled", function () {
+      btn.hidden = true;
+      installPrompt = null;
+    });
+  }
+
+  /* 서비스워커. 내용을 캐시하진 않고, 설치 가능 조건을 채우는 용도다. */
+  function registerSW() {
+    if (!("serviceWorker" in navigator) || location.protocol !== "https:") return;
+    navigator.serviceWorker.register("/sw.js").catch(function () { });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     bindShare();
     bindGoto();
     bindFilter();
+    bindInstall();
+    registerSW();
     if (CFG.mode === "region") startRegionPage();
     else if (CFG.mode === "home") startHomePage();
 
