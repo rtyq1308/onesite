@@ -60,17 +60,44 @@
       (index != null ? '<button type="button" class="act" data-goto="' + index + '">목록에서 보기</button>' : "");
   }
 
+  function won(n) { return Number(n).toLocaleString() + "원"; }
+
+  /* fr=1 상시무료 / fl 있으면 그 요일만 무료 / p30 있으면 유료 / 셋 다 없으면 요금 미상 */
+  function kindOf(row) {
+    if (row.fr) return "free";
+    if (row.fl && row.fl.length) return "partly";
+    if (row.p30) return "paid";
+    return "unknown";
+  }
+
+  /* 요금 상세. 기본 30분 600원 / 추가 10분 300원 / 일 최대 12,000원 */
+  function feeChips(row) {
+    var out = [];
+    if (row.bc && row.bt) out.push(row.bt + "분 " + won(row.bc));
+    if (row.ac && row.at) out.push("추가 " + row.at + "분 " + won(row.ac));
+    if (row.dm) out.push("일 최대 " + won(row.dm));
+    return out;
+  }
+
   function itemHTML(row, index) {
-    // fl 이 비어 있으면 상시 무료, 값이 있으면 그 요일에만 무료다.
-    var partly = !!(row.fl && row.fl.length);
+    var kind = kindOf(row);
     var chips = [];
-    if (partly) {
+
+    if (kind === "free") {
+      chips.push('<span class="chip">무료</span>');
+    } else if (kind === "partly") {
       row.fl.forEach(function (label) {
         chips.push('<span class="chip warn">' + esc(label) + "</span>");
       });
+    } else if (kind === "paid") {
+      chips.push('<span class="chip pay">30분 ' + esc(won(row.p30)) + "</span>");
     } else {
-      chips.push('<span class="chip">무료</span>');
+      chips.push('<span class="chip plain">유료 · 요금 미표기</span>');
     }
+    feeChips(row).forEach(function (t) {
+      chips.push('<span class="chip plain">' + esc(t) + "</span>");
+    });
+
     if (row.kd) chips.push('<span class="chip plain">' + esc(row.kd) + "</span>");
     if (row.se) chips.push('<span class="chip plain">' + esc(row.se) + "</span>");
     if (row.cp) chips.push('<span class="chip plain">' + esc(row.cp) + "면</span>");
@@ -81,7 +108,7 @@
       "<h3>" + esc(row.nm) + "</h3>" +
       '<p class="addr">' + esc(row.ad) + "</p>" +
       '<div class="meta">' + chips.join("") + "</div>" +
-      (partly ? '<p class="warn-note">평일에는 요금을 받습니다</p>' : "") +
+      (kind === "partly" ? '<p class="warn-note">평일에는 요금을 받습니다</p>' : "") +
       '<div class="links">' + actionsHTML(row, null) + "</div>" +
       "</article>";
   }
@@ -92,7 +119,7 @@
     if (!box) return;
 
     if (!rows.length) {
-      box.innerHTML = '<p class="empty">이 지역에는 등록된 무료주차장이 없습니다.</p>';
+      box.innerHTML = '<p class="empty">이 지역에는 등록된 주차장이 없습니다.</p>';
     } else {
       box.innerHTML = rows.slice(0, 300).map(function (r, i) {
         return itemHTML(r, i);
@@ -106,6 +133,7 @@
         : "";
     }
     placeFeedAd(rows.length);
+    fitAll();
     renderMarkers();
   }
 
@@ -131,53 +159,109 @@
     }
   }
 
+  /* 도심은 한 화면에 수백 곳이 몰려 라벨이 서로 덮어버린다.
+     화면 안에 있는 것만, 이미 놓인 라벨과 겹치지 않는 것만 골라 그린다.
+     state.rows 가 이미 무료 → 요일별 → 싼 유료 순으로 정렬돼 있어서
+     자리를 먼저 차지하는 쪽이 자연스럽게 무료와 저렴한 곳이 된다. */
+  function declutter() {
+    var bounds = state.map.getBounds().pad(0.2);
+    var placed = [], labeled = [], dots = [];
+
+    for (var i = 0; i < state.rows.length; i++) {
+      var r = state.rows[i];
+      if (!bounds.contains([r.la, r.lo])) continue;
+      if (labeled.length + dots.length >= 500) break;
+
+      var pt = state.map.latLngToLayerPoint([r.la, r.lo]);
+      var clear = labeled.length < 140;
+      for (var j = 0; clear && j < placed.length; j++) {
+        if (Math.abs(placed[j].x - pt.x) < 56 && Math.abs(placed[j].y - pt.y) < 22) {
+          clear = false;
+        }
+      }
+      if (clear) {
+        placed.push(pt);
+        labeled.push({ row: r, idx: i });
+      } else {
+        // 자리가 없다고 지워버리면 "여기 주차장이 몰려 있다"는 정보가 사라진다.
+        // 라벨 대신 점으로 남겨두고, 확대하면 라벨로 바뀐다.
+        dots.push({ row: r, idx: i });
+      }
+    }
+    return { labeled: labeled, dots: dots };
+  }
+
+  var DOT_COLOR = {
+    free: "#1a7a5c", partly: "#c2820a", paid: "#2f5fb8", unknown: "#6b7280"
+  };
+
+  /* 마커를 누르면 길찾기·전화까지 여기서 바로 되게 한다. 점과 라벨이 같이 쓴다. */
+  function popupHTML(r, i) {
+    var kind = kindOf(r);
+    var when =
+      kind === "free" ? '<span class="pop-free">상시 무료</span>' :
+      kind === "partly" ? '<span class="pop-warn">' + esc(r.fl.join(", ")) + " · 평일 유료</span>" :
+      kind === "paid" ? '<span class="pop-pay">30분 ' + esc(won(r.p30)) + "</span>" :
+      '<span class="pop-ad">유료 · 요금 미표기</span>';
+    var extra = feeChips(r);
+    if (r.cp) extra.push(esc(r.cp) + "면");
+    if (r.tm) extra.push(esc(r.tm));
+
+    return '<div class="pop">' +
+      '<b class="pop-nm">' + esc(r.nm) + "</b>" +
+      '<span class="pop-ad">' + esc(r.ad) + "</span>" +
+      when +
+      (extra.length ? '<span class="pop-ad">' + extra.join(" · ") + "</span>" : "") +
+      '<span class="pop-acts">' + actionsHTML(r, i < 300 ? i : null) + "</span>" +
+      "</div>";
+  }
+
   function renderMarkers() {
     if (!state.map) return;
     if (state.layer) state.map.removeLayer(state.layer);
-    var rows = state.rows.slice(0, 500);
-    if (!rows.length) return;
+    if (!state.rows.length) return;
 
-    var markers = rows.map(function (r, i) {
-      // 상시 무료는 초록, 요일별 무료는 주황 박스로 구분한다.
-      var partly = !!(r.fl && r.fl.length);
-      var when = partly
-        ? '<span class="pop-warn">' + esc(r.fl.join(", ")) + " · 평일 유료</span>"
-        : '<span class="pop-free">상시 무료</span>';
-      var extra = [];
-      if (r.cp) extra.push(esc(r.cp) + "면");
-      if (r.tm) extra.push(esc(r.tm));
+    var picked = declutter();
 
-      // 마커를 누르면 길찾기·전화까지 팝업에서 바로 되게 한다.
-      var popup =
-        '<div class="pop">' +
-        '<b class="pop-nm">' + esc(r.nm) + "</b>" +
-        '<span class="pop-ad">' + esc(r.ad) + "</span>" +
-        when +
-        (extra.length ? '<span class="pop-ad">' + extra.join(" · ") + "</span>" : "") +
-        '<span class="pop-acts">' + actionsHTML(r, i < 300 ? i : null) + "</span>" +
-        "</div>";
+    // 라벨에 밀린 곳은 점으로. 팝업은 라벨과 똑같이 붙여서 눌러볼 수 있게 한다.
+    var markers = picked.dots.map(function (item) {
+      var r = item.row, i = item.idx;
+      var c = DOT_COLOR[kindOf(r)];
+      return L.circleMarker([r.la, r.lo], {
+        radius: 4, weight: 1, color: "#fff", fillColor: c, fillOpacity: 0.95
+      }).bindPopup(popupHTML(r, i), { minWidth: 210, maxWidth: 260 });
+    });
 
-      // 원 대신 글자 박스. 상시 무료는 "무료", 요일별은 그 요일을 그대로 보여준다.
-      var label = partly
-        ? r.fl[0].replace(" 무료개방", "").replace(" 무료", "")
-        : "무료";
+    markers = markers.concat(picked.labeled.map(function (item) {
+      var r = item.row, i = item.idx;
+      // 무료는 초록 "무료", 요일별은 주황 요일, 유료는 파랑 30분 요금.
+      var kind = kindOf(r);
+      // 원 대신 글자 박스. 지도만 봐도 공짜인지 얼마인지 읽히게 한다.
+      var label =
+        kind === "free" ? "무료" :
+        kind === "partly" ? r.fl[0].replace(" 무료개방", "").replace(" 무료", "") :
+        kind === "paid" ? won(r.p30) :
+        "유료";
       var icon = L.divIcon({
-        className: "pin" + (partly ? " pin-partly" : ""),
+        className: "pin pin-" + kind,
         html: "<span>" + esc(label) + "</span>",
         iconSize: null
       });
 
       return L.marker([r.la, r.lo], { icon: icon, riseOnHover: true })
-        .bindPopup(popup, { minWidth: 210, maxWidth: 260 });
-    });
+        .bindPopup(popupHTML(r, i), { minWidth: 210, maxWidth: 260 });
+    }));
     state.layer = L.layerGroup(markers).addTo(state.map);
+  }
 
-    // animate:false 로 즉시 맞춘다. 애니메이션 줌은 CSS 트랜지션의 완료 이벤트에
-    // 의존하는데, 백그라운드 탭처럼 트랜지션이 스로틀링되는 상황에서는 그 이벤트가
-    // 오지 않아 지도가 초기 화면에 멈춰버린다. 첫 화면 맞춤에는 애니메이션이 필요 없다.
-    // maxZoom 은 주차장이 한두 곳뿐인 지역에서 골목까지 확대되는 것을 막는다.
+  /* 전체 데이터가 다 보이도록 한 번만 맞춘다.
+     animate:false 인 이유: 애니메이션 줌은 CSS 트랜지션 완료 이벤트에 의존하는데,
+     백그라운드 탭처럼 트랜지션이 스로틀링되면 그 이벤트가 오지 않아 지도가 멈춘다.
+     maxZoom 은 주차장이 한두 곳뿐인 지역에서 골목까지 확대되는 것을 막는다. */
+  function fitAll() {
+    if (!state.map || !state.rows.length) return;
     state.map.fitBounds(
-      L.latLngBounds(rows.map(function (r) { return [r.la, r.lo]; })).pad(0.15),
+      L.latLngBounds(state.rows.map(function (r) { return [r.la, r.lo]; })).pad(0.15),
       { animate: false, maxZoom: 15 }
     );
   }
@@ -199,11 +283,14 @@
       resizeTimer = setTimeout(function () {
         if (!state.map) return;
         state.map.invalidateSize();
-        renderMarkers();
+        fitAll();
       }, 200);
     }
     window.addEventListener("resize", refit);
     window.addEventListener("orientationchange", refit);
+
+    // 확대하면 가려졌던 곳이 하나씩 드러난다.
+    state.map.on("moveend zoomend", renderMarkers);
   }
 
   /* ---------- 페이지별 진입 ---------- */
@@ -401,10 +488,25 @@
     });
   }
 
+  /* 광고는 레이아웃이 잡힌 뒤에 요청한다. HTML 안에서 바로 push 하면
+     폭이 0으로 잡혀 availableWidth=0 오류가 나고 지면이 비어버린다. */
+  function pushAds() {
+    var units = document.querySelectorAll("ins.adsbygoogle:not([data-adsbygoogle-status])");
+    Array.prototype.forEach.call(units, function (ins) {
+      if (!ins.getBoundingClientRect().width) return;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (err) { /* 광고 차단 등 - 무시 */ }
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     bindShare();
     bindGoto();
     if (CFG.mode === "region") startRegionPage();
     else if (CFG.mode === "home") startHomePage();
+
+    // 레이아웃이 안정된 뒤 광고 요청
+    setTimeout(pushAds, 300);
   });
 })();

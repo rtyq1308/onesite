@@ -417,3 +417,13 @@ main.wrap code {
   font-size: 12.5px;
   border-radius: 8px;
 }
+
+/* 유료 주차장 */
+.chip.pay { background: #e8effc; color: #2f5fb8; }
+.pop-pay { color: #2f5fb8; font-size: 12px; font-weight: 700; }
+@media (prefers-color-scheme: dark) {
+  .chip.pay { background: #1c2a41; color: #8fb4f2; }
+  .pop-pay { color: #8fb4f2; }
+}
+.pin-paid span { background: #2f5fb8; }
+.pin-unknown span { background: #6b7280; }

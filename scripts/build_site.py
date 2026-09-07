@@ -23,6 +23,8 @@ import statistics
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW_DIR = os.path.join(ROOT, "data", "raw")
 STATIC_DIR = os.path.join(ROOT, "static")
+# 사이트 루트에 그대로 올라가야 하는 파일들(검색엔진 소유확인 등)
+PUBLIC_DIR = os.path.join(ROOT, "public")
 DIST = os.path.join(ROOT, "dist")
 
 # canonical·사이트맵은 빌드 시점에 고정된다. 기본값을 실제 도메인으로 둬서
@@ -192,23 +194,42 @@ def parking_kinds(row):
     return owner, place
 
 
+def per30(charge, minutes):
+    """기본요금은 '10분 300원', '30분 600원' 처럼 단위가 제각각이라 그대로 비교할 수 없다.
+    30분 기준으로 환산해야 지도에서 싼 곳과 비싼 곳을 견줄 수 있다."""
+    if charge and minutes:
+        return int(round(charge * 30.0 / minutes))
+    return 0
+
+
 def normalize_parking(rows):
+    """무료와 유료를 함께 담는다. 구분은 세 값으로 한다.
+       fr=1        상시 무료
+       fl=[...]    그 요일에만 무료 (평일 유료)
+       p30>0       유료. 30분 환산 요금
+       셋 다 비면  유료지만 요금 미신고
+    """
     out = []
     for row in rows:
         fee = pick(row, "parkingchrgeInfo", "parkingchrgeinfo", "chargeInfo")
         always_free = "무료" in fee
-        # 서울 데이터에만 있는 조건부 무료(토요일·공휴일 등). 상시 무료가 아니어도
-        # '언제 공짜인지'는 알려줄 값어치가 있어 포함하되, 반드시 라벨을 달아 구분한다.
+        # 서울 데이터에만 있는 조건부 무료(토요일·공휴일 등).
         labels = [str(x).strip() for x in (row.get("freeLabels") or []) if str(x).strip()]
-        if not always_free and not labels:
-            continue
+
         address = pick(row, "rdnmadr", "lnmadr")
         sido, sigungu = split_region(address)
         point = coords(row)
         name = pick(row, "prkplceNm")
         if not (sido and sigungu and point and name):
             continue
+
         owner, place = parking_kinds(row)
+        base_charge = to_int(pick(row, "basicCharge"))
+        base_time = to_int(pick(row, "basicTime"))
+        add_charge = to_int(pick(row, "addUnitCharge"))
+        add_time = to_int(pick(row, "addUnitTime"))
+        day_max = to_int(pick(row, "dayCmmtkt"))
+
         out.append({
             "sido": sido, "sigungu": sigungu,
             "nm": name, "ad": address,
@@ -218,10 +239,27 @@ def normalize_parking(rows):
             "tel": pick(row, "phoneNumber"),
             "kd": owner,   # 공영 / 민영
             "se": place,   # 노상 / 노외 / 부설
-            # 비어 있으면 상시 무료, 값이 있으면 그 때만 무료
+            "fr": 1 if always_free else 0,
             "fl": [] if always_free else labels,
+            "p30": 0 if always_free else per30(base_charge, base_time),
+            "bc": 0 if always_free else base_charge,
+            "bt": 0 if always_free else base_time,
+            "ac": 0 if always_free else add_charge,
+            "at": 0 if always_free else add_time,
+            "dm": 0 if always_free else day_max,
         })
     return out
+
+
+def spot_group(row):
+    """목록·마커 정렬용. 무료 → 요일별 무료 → 싼 유료 → 요금 미상 순."""
+    if row["fr"]:
+        return 0
+    if row["fl"]:
+        return 1
+    if row["p30"]:
+        return 2
+    return 3
 
 
 def dedupe(rows):
@@ -307,8 +345,9 @@ def ad_unit(kind, allowed=True):
             '<ins class="adsbygoogle" style="display:block"'
             ' data-ad-client="%s" data-ad-slot="%s"'
             ' data-ad-format="auto" data-full-width-responsive="true"></ins>'
-            "<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></aside>"
-            ) % (kind, ADSENSE_CLIENT, slot)
+            # push 는 app.js 가 로드 완료 후에 한다. 파싱 도중 인라인으로 부르면
+            # 아직 레이아웃 전이라 availableWidth=0 오류로 광고가 안 뜬다.
+            "</aside>") % (kind, ADSENSE_CLIENT, slot)
 
 
 def share_bar(prompt):
@@ -513,21 +552,30 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
 # 페이지 생성
 # --------------------------------------------------------------------------
 
-FIELDS = ["nm", "ad", "la", "lo", "tm", "cp", "tel", "kd", "se", "fl"]
+FIELDS = ["nm", "ad", "la", "lo", "tm", "cp", "tel", "kd", "se",
+          "fr", "fl", "p30", "bc", "bt", "ac", "at", "dm"]
 
 
-def lead_text(always_n, partly_n):
-    """상시 무료가 아예 없는 지역이 흔해서(서울 대부분) 문구를 따로 둔다."""
-    if not partly_n:
-        return ("공공데이터에 요금이 “무료”로 등록된 주차장 %d곳입니다. "
-                "주차면수가 많은 순서로 보여줍니다." % always_n)
-    if not always_n:
-        return ("이 지역에는 상시 무료 주차장이 없습니다. 대신 특정 요일에만 무료로 "
-                "풀리는 공영주차장 %d곳을 모았습니다. 카드에 “토요일 무료”처럼 언제 "
-                "공짜인지 표시했습니다." % partly_n)
-    return ("상시 무료 %d곳과, 특정 요일에만 무료로 풀리는 %d곳입니다. "
-            "조건부인 곳은 카드에 언제 공짜인지 표시했으니 방문 요일을 확인하세요."
-            % (always_n, partly_n))
+def lead_text(free_n, partly_n, paid_n, cheapest):
+    """지역마다 구성이 크게 달라서(서울은 상시 무료가 거의 없다) 문구를 나눠 쓴다."""
+    bits = []
+    if free_n:
+        bits.append("언제 가도 공짜인 곳 %d곳" % free_n)
+    if partly_n:
+        bits.append("특정 요일에만 무료로 풀리는 곳 %d곳" % partly_n)
+    if paid_n:
+        if cheapest:
+            bits.append("유료 %d곳(가장 싼 곳은 30분 %s원)" % (paid_n, format(cheapest, ",")))
+        else:
+            bits.append("유료 %d곳" % paid_n)
+
+    if not bits:
+        return "등록된 주차장 정보가 없습니다."
+    head = ", ".join(bits[:-1])
+    tail = bits[-1]
+    joined = (head + ", " + tail) if head else tail
+    return (joined + "입니다. 무료가 먼저 나오고, 유료는 30분 요금이 싼 순서로 "
+            "보여줍니다. 요금은 카드와 지도에 함께 표시했습니다.")
 
 
 def build_region_json(sido, sigungu, rows):
@@ -547,20 +595,20 @@ def build_region_page(sido, sigungu, rows, siblings):
     short = SIDO_SHORT.get(sido, sido)
     total_slots = sum(r["cp"] for r in rows)
     rich = len(rows) >= THIN_PAGE_MIN
-    always = [r for r in rows if not r["fl"]]
+    always = [r for r in rows if r["fr"]]
     partly = [r for r in rows if r["fl"]]
+    paid = [r for r in rows if not r["fr"] and not r["fl"]]
+    priced = [r for r in paid if r["p30"]]
+    cheapest = min((r["p30"] for r in priced), default=0)
 
-    title = "%s %s 무료주차장 %d곳 지도 | %s" % (short, sigungu, len(rows), SITE_NAME)
-    desc = (("%s %s에서 토요일·공휴일에 무료로 풀리는 공영주차장 %d곳을 지도에서 "
-             "확인하세요. 주차면수와 운영시간, 길찾기를 제공합니다."
-             % (sido, sigungu, len(partly)))
-            if not always else
-            ("%s %s의 무료주차장 %d곳(상시 무료 %d곳)을 지도에서 확인하세요. "
-             "주차면수, 운영시간, 길찾기까지 한 번에 제공합니다."
-             % (sido, sigungu, len(rows), len(always))))
+    title = "%s %s 주차장 %d곳 | 무료 %d곳·요금 비교 - %s" % (
+        short, sigungu, len(rows), len(always), SITE_NAME)
+    desc = ("%s %s의 주차장 %d곳을 한눈에. 상시 무료 %d곳과 유료 %d곳의 30분 요금을 "
+            "지도에서 비교하고 길찾기까지 바로 하세요."
+            % (sido, sigungu, len(rows), len(always), len(paid)))
 
     nearby = "".join(
-        '<a href="../%s/">%s<small>무료주차장 %d곳</small></a>' % (name, e(name), count)
+        '<a href="../%s/">%s<small>주차장 %d곳</small></a>' % (name, e(name), count)
         for name, count in siblings if name != sigungu
     )
 
@@ -576,16 +624,17 @@ def build_region_page(sido, sigungu, rows, siblings):
 
     body = (
         '<p class="crumb"><a href="../../">홈</a> › <a href="../">%s</a> › %s</p>' % (e(sido), e(sigungu))
-        + "<h1>%s %s 무료주차장</h1>" % (e(sido), e(sigungu))
-        + '<p class="lead">%s</p>' % lead_text(len(always), len(partly))
+        + "<h1>%s %s 무료·유료 주차장</h1>" % (e(sido), e(sigungu))
+        + '<p class="lead">%s</p>' % lead_text(len(always), len(partly), len(paid), cheapest)
         + stat_block(
             [("상시 무료", "%d곳" % len(always))]
             + ([("요일별 무료", "%d곳" % len(partly))] if partly else [])
+            + ([("유료", "%d곳" % len(paid))] if paid else [])
             + [("전체 주차면", format(total_slots, ",") + "면")])
         + '<div id="map"></div>'
         # 공유는 목록 앞에 둔다. 목록이 수백 장까지 늘어나기 때문에 뒤에 두면
         # 화면상 만 픽셀 아래로 밀려 아무도 못 본다.
-        + share_bar("%s %s 무료주차장, 필요한 사람에게 보내주세요" % (sido, sigungu))
+        + share_bar("%s %s 주차장 요금 지도, 필요한 사람에게 보내주세요" % (sido, sigungu))
         + ad_unit("top", rich)
         + list_block()
         + ad_unit("bottom", rich)
@@ -622,22 +671,23 @@ def build_region_page(sido, sigungu, rows, siblings):
 def build_sido_page(sido, siblings, total):
     short = SIDO_SHORT.get(sido, sido)
     grid = "".join(
-        '<a href="%s/">%s<small>무료주차장 %d곳</small></a>' % (e(name), e(name), count)
+        '<a href="%s/">%s<small>주차장 %d곳</small></a>' % (e(name), e(name), count)
         for name, count in siblings
     )
-    title = "%s 무료주차장 %s곳 지도 | %s" % (short, format(total, ","), SITE_NAME)
-    desc = ("%s 무료주차장 %s곳을 시군구별로 정리했습니다. 지역을 고르면 지도와 "
-            "무료 주차장 목록, 주차면수와 운영시간을 볼 수 있습니다."
+    title = "%s 주차장 %s곳 | 무료주차장·요금 지도 - %s" % (short, format(total, ","), SITE_NAME)
+    desc = ("%s의 무료·유료 주차장 %s곳을 시군구별로 정리했습니다. 지역을 고르면 지도와 "
+            "목록에서 무료 여부와 30분 요금을 바로 비교할 수 있습니다."
             % (sido, format(total, ",")))
     body = (
         '<p class="crumb"><a href="../">홈</a> › %s</p>' % e(sido)
-        + "<h1>%s 무료주차장</h1>" % e(sido)
-        + '<p class="lead">시군구를 선택하면 지도와 무료 주차장 목록이 열립니다.</p>'
-        + stat_block([("무료주차장", format(total, ",") + "곳"),
+        + "<h1>%s 무료·유료 주차장</h1>" % e(sido)
+        + '<p class="lead">시군구를 선택하면 지도와 목록이 열립니다. '
+          '무료가 먼저 나오고, 유료는 30분 요금이 싼 순서로 보여줍니다.</p>'
+        + stat_block([("주차장", format(total, ",") + "곳"),
                       ("지역", "%d개 시군구" % len(siblings))])
-        + "<h2>%s 시군구별 무료주차장</h2>" % e(short)
+        + "<h2>%s 시군구별 주차장</h2>" % e(short)
         + '<div class="grid">%s</div>' % grid
-        + share_bar("%s 무료주차장 지도, 주변에 공유해보세요" % sido)
+        + share_bar("%s 주차장 요금 지도, 주변에 공유해보세요" % sido)
         + ad_unit("bottom")
     )
     breadcrumb = {
@@ -656,7 +706,7 @@ def build_sido_page(sido, siblings, total):
            "%s/%s/" % (SITE_URL, sido), body, "../", scripts=scripts)
 
 
-def build_home(index, total, total_slots, top_regions):
+def build_home(index, total, total_slots, top_regions, free_total):
     grid = "".join(
         '<a href="%s/">%s<small>%s곳</small></a>'
         % (e(s["nm"]), e(s["nm"]), format(s["p"], ","))
@@ -665,29 +715,30 @@ def build_home(index, total, total_slots, top_regions):
     # 무료주차장이 많은 시군구로 바로 들어가는 링크. 사용자에게도 쓸모 있고,
     # 크롤러가 홈에서 세부 페이지까지 한 번에 닿게 해준다.
     top_links = "".join(
-        '<a href="%s/%s/">%s %s<small>무료주차장 %d곳</small></a>'
+        '<a href="%s/%s/">%s %s<small>주차장 %d곳</small></a>'
         % (e(sido), e(sgg), e(SIDO_SHORT.get(sido, sido)), e(sgg), count)
         for sido, sgg, count in top_regions
     )
 
     count_text = format(total, ",")
-    title = "전국 무료주차장 지도 | 무료 주차장 %s곳 - %s" % (count_text, SITE_NAME)
-    desc = ("전국 무료주차장 %s곳을 지도 한 장에 모았습니다. 내 위치에서 가까운 무료 주차장을 "
-            "바로 찾고, 시·도별 무료주차장 목록과 주차면수·운영시간·길찾기까지 확인하세요."
+    title = "전국 무료주차장·주차요금 지도 | 주차장 %s곳 - %s" % (count_text, SITE_NAME)
+    desc = ("전국 주차장 %s곳을 지도 한 장에. 무료주차장은 무료로, 유료는 30분 요금으로 "
+            "표시해 바로 비교됩니다. 내 위치에서 가까운 순으로 찾고 길찾기까지 하세요."
             % count_text)
 
     body = (
-        "<h1>전국 무료주차장 지도</h1>"
-        + '<p class="lead">돈 안 내고 대는 곳만 모았습니다. 공공데이터에 요금이 “무료”로 '
-          "등록된 전국 무료 주차장 %s곳을, 내 위치 기준으로 가까운 순서로 찾아드립니다.</p>" % count_text
-        + stat_block([("전국 무료주차장", count_text + "곳"),
-                      ("전체 주차면", format(total_slots, ",") + "면"),
+        "<h1>전국 무료주차장 · 주차요금 지도</h1>"
+        + '<p class="lead">공짜로 댈 수 있는 곳은 “무료”로, 돈을 내야 하는 곳은 '
+          "30분 요금으로 지도에 바로 띄웁니다. 전국 주차장 %s곳 가운데 "
+          "상시 무료가 %s곳입니다.</p>" % (count_text, format(free_total, ","))
+        + stat_block([("무료주차장", format(free_total, ",") + "곳"),
+                      ("전체 주차장", count_text + "곳"),
                       ("갱신일", TODAY)])
         + '<p><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
         + '<div id="map"></div>'
         # 지역 페이지와 같은 이유로 공유를 목록 앞에 둔다.
-        + share_bar("전국 무료주차장 지도, 필요한 사람에게 보내주세요")
+        + share_bar("전국 주차장 요금 지도, 필요한 사람에게 보내주세요")
         + '<div id="nearby-result" hidden>%s</div>' % list_block()
         + ad_unit("top")
         + "<h2>시·도별 무료주차장</h2>"
@@ -810,7 +861,12 @@ def load_parking():
 def main():
     raw = load_parking()
     rows = dedupe(normalize_parking(raw))
-    print("원본 %s건 → 무료주차장 %s건" % (format(len(raw), ","), format(len(rows), ",")))
+    free_n = sum(1 for r in rows if r["fr"])
+    part_n = sum(1 for r in rows if r["fl"])
+    paid_n = len(rows) - free_n - part_n
+    print("원본 %s건 → 주차장 %s건 (상시무료 %s / 요일별 %s / 유료 %s)"
+          % (format(len(raw), ","), format(len(rows), ","),
+             format(free_n, ","), format(part_n, ","), format(paid_n, ",")))
     if not rows:
         raise SystemExit(
             "쓸 수 있는 레코드가 0건입니다.\n"
@@ -825,6 +881,8 @@ def main():
 
     reset_dist()
     shutil.copytree(STATIC_DIR, os.path.join(DIST, "assets"), dirs_exist_ok=True)
+    if os.path.isdir(PUBLIC_DIR):
+        shutil.copytree(PUBLIC_DIR, DIST, dirs_exist_ok=True)
 
     by_sido = {}
     for (sido, sigungu), bucket in regions.items():
@@ -845,7 +903,7 @@ def main():
         sido_entry = {"nm": sido, "p": sido_total, "sgg": []}
         for sigungu, bucket in items:
             # 주차면수가 많은 곳이 대체로 더 쓸모 있으니 그 순서로 노출한다.
-            bucket.sort(key=lambda r: (1 if r["fl"] else 0, -r["cp"], r["nm"]))
+            bucket.sort(key=lambda r: (spot_group(r), r["p30"], -r["cp"], r["nm"]))
             build_region_json(sido, sigungu, bucket)
             url_path = build_region_page(sido, sigungu, bucket, siblings)
             if url_path:  # 항목이 너무 적은 지역은 noindex라 사이트맵에서도 뺀다
@@ -866,7 +924,7 @@ def main():
         key=lambda x: -x[2],
     )[:12]
 
-    build_home(index, len(rows), total_slots, top_regions)
+    build_home(index, len(rows), total_slots, top_regions, free_n)
     build_privacy_page()
     urls.append(SITE_URL + "/privacy/")
     write_support_files(urls)

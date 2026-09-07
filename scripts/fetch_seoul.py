@@ -114,6 +114,13 @@ def to_standard(row):
         "phoneNumber": str(row.get("TELNO") or "").strip(),
         "prkplceSe": "공영",
         "prkplceType": place,
+        # 요금. 표준데이터와 같은 필드명으로 맞춰 그대로 섞어 쓸 수 있게 한다.
+        "basicCharge": row.get("PRK_CRG"),
+        "basicTime": row.get("PRK_HM"),
+        "addUnitCharge": row.get("ADD_CRG"),
+        "addUnitTime": row.get("ADD_UNIT_TM_MNT"),
+        "dayCmmtkt": row.get("DLY_MAX_CRG"),
+        "monthCmmtkt": row.get("MNTL_CMUT_CRG"),
         "operDay": "",
         "weekdayOperOpenHhmm": hhmm4(row.get("WD_OPER_BGNG_TM")),
         "weekdayOperColseHhmm": hhmm4(row.get("WD_OPER_END_TM")),
