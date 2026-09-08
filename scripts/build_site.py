@@ -294,6 +294,9 @@ PAGE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 전화번호 자동 링크를 끈다. 켜두면 버튼 안 숫자를 브라우저가
+     제 파란색 링크로 다시 감싸 흰 글자가 파랗게 보인다. -->
+<meta name="format-detection" content="telephone=no">
 <title>{{TITLE}}</title>
 <meta name="description" content="{{DESC}}">
 <link rel="canonical" href="{{CANONICAL}}">
@@ -304,6 +307,11 @@ PAGE = """<!doctype html>
 {{VERIFY}}
 <meta property="og:site_name" content="공짜맵">
 <meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="{{SITE}}/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{SITE}}/og.png">
 {{ROBOTS}}
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1a7a5c">
@@ -332,6 +340,9 @@ PAGE = """<!doctype html>
 </body>
 </html>
 """
+
+# 공유 썸네일 주소는 페이지마다 같으므로 템플릿에서 한 번만 박아 넣는다.
+PAGE = PAGE.replace("{{SITE}}", SITE_URL)
 
 MAP_HEAD = (
     '<link rel="stylesheet" '

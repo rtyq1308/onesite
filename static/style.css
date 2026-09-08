@@ -197,6 +197,12 @@ footer.site a {
 .btn:hover,
 .act:hover { border-color: var(--accent-line); filter: brightness(1.06); }
 .act { color: #fff; }
+/* iOS/사파리가 전화번호를 제멋대로 파란 링크로 감싸는 것 차단 */
+.act a,
+.act [x-apple-data-detectors] {
+  color: inherit !important;
+  text-decoration: none !important;
+}
 
 /* 목록 위 필터 줄 */
 .listbar {
@@ -437,6 +443,12 @@ main.wrap code {
 }
 .pin-partly span { background: #c2820a; }
 .pin:hover span { filter: brightness(1.12); }
+
+/* Leaflet 이 .leaflet-container a { color:#0078A8 } 을 걸어두기 때문에
+   지도 팝업 안에서만 버튼 글자가 파랗게(방문 후에는 보라/붉게) 뜬다.
+   선택자를 한 단계 더 구체적으로 써서 되돌린다. */
+.leaflet-container a.act { color: #fff; }
+.leaflet-container a.act.kakao { color: #191919; }
 
 /* 팝업 안 버튼은 지도 위에 뜨므로 더 조밀하게 */
 .pop-acts .act {
