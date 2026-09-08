@@ -393,11 +393,11 @@ def share_bar(prompt):
         # SDK 가 준비돼야 동작하므로 JS 가 켤 때까지 숨겨둔다
         ("kakao", "카카오톡 공유", " hidden"),
         ("instagram", "인스타그램 공유", ""),
+        ("facebook", "페이스북 공유", ""),
         ("native", "공유하기", " hidden"),   # navigator.share 가 있을 때만 JS가 켠다
         ("copy", "주소 복사", ""),
         ("naver", "네이버 블로그", ""),
         ("x", "X", ""),
-        ("facebook", "페이스북 공유", ""),
     ]
     # 브랜드 색을 쓰는 버튼은 같은 이름의 클래스를 함께 준다.
     branded = {"kakao", "instagram", "facebook"}
@@ -798,8 +798,7 @@ def build_home(index, total, total_slots, top_regions, free_total):
                       ("전체 주차장", count_text + "곳"),
                       ("갱신일 · 매월 자동 갱신", TODAY)])
         + '<p class="cta"><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button>'
-          '<button type="button" class="btn" data-share="quick">공유하기</button>'
-          '<button type="button" class="btn" id="install-app" hidden>앱 설치</button></p>'
+          '<button type="button" class="btn" id="install-app" hidden>앱 설치 바로가기</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
         + '<div id="map"></div>'
         + listbar_block(hidden=True)
