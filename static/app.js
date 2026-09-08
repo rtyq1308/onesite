@@ -525,29 +525,29 @@
     return /iphone|ipad|ipod/i.test(navigator.userAgent);
   }
 
-  /* 안드로이드는 intent 로 크롬을 직접 띄울 수 있다. iOS 에는 그런 통로가 없어
-     사파리로 나가는 메뉴 위치를 글로 알려주는 수밖에 없다. */
-  function escapeHint() {
-    if (isIOSDevice()) {
-      return "오른쪽 아래 나침반 모양(사파리) 아이콘, 또는 오른쪽 위 ··· 를 눌러 " +
-        "“Safari에서 열기”를 선택해주세요.";
-    }
-    return "오른쪽 위 점 3개(⋮)를 눌러 “다른 브라우저에서 열기”를 선택해주세요.";
-  }
-
+  /* 안드로이드는 intent 로 크롬을 직접 띄울 수 있으니 버튼 하나로 끝낸다.
+     iOS 에는 그런 통로가 없어 사파리로 나가는 메뉴 위치를 글로 알려주고
+     주소 복사를 남겨둔다. */
   function showEscapeGuide(reason) {
     var box = el("#nearby-msg");
     if (!box) return;
+    var ios = isIOSDevice();
+    var hint = ios
+      ? "오른쪽 아래 나침반 모양(사파리) 아이콘, 또는 오른쪽 위 ··· 를 눌러 " +
+        "“Safari에서 열기”를 선택해주세요."
+      : "아래 “크롬으로 열기”를 누르면 바로 이동합니다.";
+
     var html = "<b>" + esc(reason) + "</b><br>" +
-      "지금은 앱 안에서 열려 있어 위치 권한을 쓸 수 없습니다. " + esc(escapeHint());
-    if (!isIOSDevice()) {
-      // 크롬이 없으면 아무 일도 안 일어나므로 안내 문구는 그대로 둔다.
+      "지금은 앱 안에서 열려 있어 위치 권한을 쓸 수 없습니다. " + esc(hint);
+
+    if (ios) {
+      html += '<br><button type="button" class="btn" style="margin-top:8px" ' +
+        'id="escape-copy">주소 복사</button>';
+    } else {
       var url = "intent://" + location.host + location.pathname +
         "#Intent;scheme=https;package=com.android.chrome;end";
       html += '<br><a class="btn" style="margin-top:8px" href="' + esc(url) + '">크롬으로 열기</a>';
     }
-    html += '<br><button type="button" class="btn" style="margin-top:8px" ' +
-      'id="escape-copy">주소 복사</button>';
     box.innerHTML = html;
     // bindShare() 를 다시 부르면 기존 버튼에 리스너가 겹쳐 붙는다. 여기만 직접 건다.
     var copyBtn = el("#escape-copy");
