@@ -445,12 +445,17 @@ main.wrap code {
   border-radius: 8px;
 }
 
-/* 유료 주차장 */
-.chip.pay { background: #e8effc; color: #2f5fb8; }
-.pop-pay { color: #2f5fb8; font-size: 12px; font-weight: 700; }
-@media (prefers-color-scheme: dark) {
-  .chip.pay { background: #1c2a41; color: #8fb4f2; }
-  .pop-pay { color: #8fb4f2; }
+/* 유료 주차장. 요금은 파란 글자가 아니라 파란 배지 위 흰 글자로 통일한다.
+   흰 글자여야 지도 팝업/카드/다크모드 어디서나 같은 대비로 읽힌다. */
+.chip.pay { background: #2f5fb8; color: #fff; border-color: #27509b; }
+.pop-pay {
+  align-self: flex-start;
+  background: #2f5fb8;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 6px;
 }
 .pin-paid span { background: #2f5fb8; }
 .pin-unknown span { background: #6b7280; }
@@ -468,3 +473,14 @@ main.wrap code {
 }
 .btn.kakao:hover,
 .act.kakao:hover { border-color: #c9b400; filter: brightness(1.03); }
+
+/* 지도 팝업은 Leaflet 기본값이 항상 흰색이라 다크모드에서 글자가 묻힌다. */
+@media (prefers-color-scheme: dark) {
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    background: var(--card);
+    color: var(--text);
+    box-shadow: 0 3px 14px rgba(0, 0, 0, .5);
+  }
+  .leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
+}
