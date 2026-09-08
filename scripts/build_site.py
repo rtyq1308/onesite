@@ -493,6 +493,21 @@ def analytics_tag():
             'gtag("js",new Date());gtag("config","%s");</script>') % (e(GA_ID), e(GA_ID))
 
 
+# 마이크로소프트 클래리티 프로젝트 ID. 히트맵·세션 기록용.
+CLARITY_ID = env("CLARITY_ID", "yf827u85ho")
+
+
+def clarity_tag():
+    """값이 비면 스크립트를 아예 넣지 않는다."""
+    if not CLARITY_ID:
+        return ""
+    return ('<script>(function(c,l,a,r,i,t,y){'
+            'c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};'
+            't=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;'
+            'y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);'
+            '})(window, document, "clarity", "script", "%s");</script>') % e(CLARITY_ID)
+
+
 def verification_tags():
     tags = []
     if GOOGLE_VERIFY:
@@ -528,6 +543,9 @@ PRIVACY_SECTIONS = [
         "또한 방문자 수와 어떤 지역이 많이 조회되는지 파악하기 위해 구글 애널리틱스를 "
         "사용합니다. 방문 시각·페이지 주소·기기 종류·대략적인 지역 같은 통계 정보만 "
         "수집하며, 이름이나 연락처 같은 개인 식별 정보는 수집하지 않습니다.",
+        "화면의 어느 부분이 많이 눌리는지 살펴 사용성을 개선하기 위해 마이크로소프트 "
+        "클래리티(Microsoft Clarity)도 함께 사용합니다. 클릭·스크롤 위치와 화면 이동 "
+        "기록이 남으며, 입력창에 적은 내용은 자동으로 가려져 수집되지 않습니다.",
         "브라우저 설정에서 쿠키를 차단할 수 있으며, 차단하더라도 주차장 정보 조회에는 "
         "지장이 없습니다.",
     ]),
@@ -615,7 +633,8 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
     for key, value in [
         ("{{TITLE}}", title), ("{{DESC}}", desc), ("{{CANONICAL}}", canonical),
         ("{{BODY}}", body), ("{{ROOT}}", root),
-        ("{{HEAD}}", analytics_tag() + adsense_head() + head), ("{{ROBOTS}}", robots),
+        ("{{HEAD}}", analytics_tag() + clarity_tag() + adsense_head() + head),
+        ("{{ROBOTS}}", robots),
         ("{{VERIFY}}", verification_tags()),
         ("{{SCRIPTS}}", kakao_sdk() + scripts), ("{{UPDATED}}", TODAY),
     ]:
