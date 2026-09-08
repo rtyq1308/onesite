@@ -620,6 +620,16 @@
 
   var installPrompt = null;
 
+  /* beforeinstallprompt 는 페이지가 뜨자마자 한 번만 날아온다.
+     bindInstall() 은 DOM 이 준비된 뒤에 도는데, 그 사이에 이벤트가 지나가면
+     영영 못 받는다. 그래서 구독만 스크립트 최상단에서 미리 해둔다. */
+  window.addEventListener("beforeinstallprompt", function (ev) {
+    ev.preventDefault();
+    installPrompt = ev;
+    var btn = el("#install-app");
+    if (btn && !isStandalone()) btn.hidden = false;
+  });
+
   function isStandalone() {
     return window.matchMedia("(display-mode: standalone)").matches ||
       window.navigator.standalone === true;
@@ -631,27 +641,27 @@
 
     var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-    // 안드로이드·크롬은 설치 가능해지면 이 이벤트를 준다.
-    window.addEventListener("beforeinstallprompt", function (ev) {
-      ev.preventDefault();
-      installPrompt = ev;
-      btn.hidden = false;
-    });
+    // 위 구독이 이미 이벤트를 받아뒀을 수 있다.
+    if (installPrompt) btn.hidden = false;
 
     // iOS 사파리에는 설치 API 가 없다. 방법을 알려주는 수밖에 없다.
     if (isIOS) btn.hidden = false;
 
     btn.addEventListener("click", function () {
       if (installPrompt) {
-        installPrompt.prompt();
-        installPrompt.userChoice.then(function (res) {
+        var ev = installPrompt;
+        // 한 번 쓴 이벤트는 재사용할 수 없다. 먼저 비워야
+        // 사용자가 닫았을 때 아래 안내로 정확히 떨어진다.
+        installPrompt = null;
+        ev.prompt();
+        ev.userChoice.then(function (res) {
           if (res && res.outcome === "accepted") btn.hidden = true;
-          installPrompt = null;
         });
       } else if (isIOS) {
         toast("공유 버튼 → '홈 화면에 추가' 를 눌러주세요");
       } else {
-        toast("브라우저 메뉴에서 '홈 화면에 추가' 를 눌러주세요");
+        // 설치 창을 한 번 닫으면 크롬이 같은 페이지에서 다시 주지 않는다.
+        toast("설치 창을 닫으셨네요. 새로고침한 뒤 다시 눌러주세요");
       }
     });
 
