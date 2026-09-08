@@ -548,6 +548,12 @@
         "#Intent;scheme=https;package=com.android.chrome;end";
       html += '<br><a class="btn" style="margin-top:8px" href="' + esc(url) + '">크롬으로 열기</a>';
     }
+    // 한 번 나가면 다시 앱 안에서 열 일이 없도록 설치까지 권한다.
+    html += '<br><span class="note" style="display:block;margin-top:8px">' +
+      (ios
+        ? "사파리에서 연 뒤 “앱 설치 바로가기”를 누르면 홈 화면에서 바로 열 수 있습니다."
+        : "크롬에서 “앱 설치 바로가기”를 누르면 다음부터는 앱으로 바로 열립니다.") +
+      "</span>";
     box.innerHTML = html;
     // bindShare() 를 다시 부르면 기존 버튼에 리스너가 겹쳐 붙는다. 여기만 직접 건다.
     var copyBtn = el("#escape-copy");
