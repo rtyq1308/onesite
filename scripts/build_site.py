@@ -347,6 +347,9 @@ PAGE = PAGE.replace("{{SITE}}", SITE_URL)
 # 네이버 지도 Client ID. HTML 소스에 그대로 실리는 공개 값이고 등록된
 # 도메인에서만 동작한다. 기본값이 없으면 매월 자동 갱신 빌드가 멈춘다.
 NAVER_MAP_CLIENT_ID = env("NAVER_MAP_CLIENT_ID", "y4040h6goe")
+
+# 목적지 검색창 노출 여부. 검색 인증값을 Cloudflare 에 넣은 뒤 "1" 로 켠다.
+SHOW_DESTINATION_SEARCH = env("SHOW_DESTINATION_SEARCH") == "1"
 MAP_HEAD = ""
 MAP_SCRIPTS = (
     '<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=%s&amp;submodules=geocoder"></script>'
@@ -355,6 +358,10 @@ MAP_SCRIPTS = (
 
 
 def destination_search():
+    # 검색용 인증값(NAVER_SEARCH_*)이 준비되기 전까지 검색창을 내려둔다.
+    # 마크업만 있고 서버가 503 을 주면 쓸 수 없는 입력창이 그냥 보이게 된다.
+    if not SHOW_DESTINATION_SEARCH:
+        return ""
     return ('<section class="destination-search" aria-label="목적지 검색">'
             '<form id="destination-form" role="search">'
             '<label for="destination-query">어디에 주차하시나요?</label>'

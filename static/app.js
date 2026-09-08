@@ -308,10 +308,24 @@
         closePopup();
         state.infoWindow = new naver.maps.InfoWindow({
           content: '<div class="naver-popup"><button class="popup-close" aria-label="상세 닫기" type="button">×</button>' + popupHTML(r, item.idx) + '</div>',
-          borderWidth: 0, backgroundColor: "transparent", disableAutoPan: true
+          // 화면 가장자리에서 열리면 지도를 밀어 상세 내용이 다 보이게 한다.
+          // idle 은 state.popupOpen 으로 막혀 있어 마커가 다시 그려지지 않는다.
+          borderWidth: 0, backgroundColor: "transparent", disableAutoPan: false
         });
         state.popupOpen = true;
         state.infoWindow.open(state.map, marker);
+        // 네이버 InfoWindow 안의 클릭은 document 까지 올라오지 않을 때가 있다.
+        // 위임에 기대지 말고 닫기 버튼에 직접 건다.
+        var content = state.infoWindow.getContentElement &&
+          state.infoWindow.getContentElement();
+        var closeBtn = content && content.querySelector(".popup-close");
+        if (closeBtn) {
+          closeBtn.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            closePopup();
+          });
+        }
       });
       state.layer.push(marker);
     });
@@ -1096,7 +1110,7 @@
     bindKakaoApp();
     bindRouteTracking();
     bindFilter();
-    bindDestinationSearch();
+    bindDestinationSearch();   // 검색창이 없으면 아무 일도 하지 않는다
     bindInstall();
     registerSW();
     if (CFG.mode === "region") startRegionPage();
