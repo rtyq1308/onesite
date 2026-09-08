@@ -634,6 +634,7 @@
   /* ---------- 홈 화면에 추가 ---------- */
 
   var installPrompt = null;
+  var promptDismissed = false;
 
   /* beforeinstallprompt 는 페이지가 뜨자마자 한 번만 날아온다.
      bindInstall() 은 DOM 이 준비된 뒤에 도는데, 그 사이에 이벤트가 지나가면
@@ -641,8 +642,7 @@
   window.addEventListener("beforeinstallprompt", function (ev) {
     ev.preventDefault();
     installPrompt = ev;
-    var btn = el("#install-app");
-    if (btn && !isStandalone()) btn.hidden = false;
+    promptDismissed = false;
   });
 
   function isStandalone() {
@@ -650,17 +650,23 @@
       window.navigator.standalone === true;
   }
 
+  /* 설치 여부를 기억해둔다. 브라우저 탭에서는 설치돼 있어도
+     standalone 이 아니라서 그것만으로는 알 수 없다. */
+  function markInstalled() {
+    try { localStorage.setItem("installed", "1"); } catch (err) { /* 무시 */ }
+  }
+
+  function wasInstalled() {
+    if (isStandalone()) return true;
+    try { return localStorage.getItem("installed") === "1"; } catch (err) { return false; }
+  }
+
   function bindInstall() {
     var btn = el("#install-app");
-    if (!btn || isStandalone()) return;   // 이미 설치했으면 권하지 않는다
+    if (!btn) return;
 
     var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-    // 위 구독이 이미 이벤트를 받아뒀을 수 있다.
-    if (installPrompt) btn.hidden = false;
-
-    // iOS 사파리에는 설치 API 가 없다. 방법을 알려주는 수밖에 없다.
-    if (isIOS) btn.hidden = false;
+    btn.hidden = false;   // 버튼은 항상 살려두고, 상황은 눌렀을 때 알려준다
 
     btn.addEventListener("click", function () {
       if (installPrompt) {
@@ -670,18 +676,26 @@
         installPrompt = null;
         ev.prompt();
         ev.userChoice.then(function (res) {
-          if (res && res.outcome === "accepted") btn.hidden = true;
+          if (res && res.outcome === "accepted") markInstalled();
+          else promptDismissed = true;
         });
+        return;
+      }
+      if (wasInstalled()) {
+        toast("이미 앱이 설치되어 있습니다");
+      } else if (promptDismissed) {
+        // 설치 창을 한 번 닫으면 크롬이 같은 페이지에서 다시 주지 않는다.
+        toast("설치 창을 닫으셨네요. 새로고침한 뒤 다시 눌러주세요");
       } else if (isIOS) {
         toast("공유 버튼 → '홈 화면에 추가' 를 눌러주세요");
       } else {
-        // 설치 창을 한 번 닫으면 크롬이 같은 페이지에서 다시 주지 않는다.
-        toast("설치 창을 닫으셨네요. 새로고침한 뒤 다시 눌러주세요");
+        // 설치 이벤트가 오지 않는 경우는 대부분 이미 설치된 상태다.
+        toast("이미 앱이 설치되어 있습니다");
       }
     });
 
     window.addEventListener("appinstalled", function () {
-      btn.hidden = true;
+      markInstalled();
       installPrompt = null;
     });
   }
