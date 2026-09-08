@@ -1,5 +1,10 @@
 # 공짜맵 (freemap-kr)
 
+네이버 지도·목적지 검색 전환 작업(2026-09-09): 소스 구현과 오프라인 테스트 완료, 실제 인증 연결·배포 전입니다.
+설정 방법과 검증 범위는 [네이버 지도 설정](docs/naver-map-setup.md), [진행 상태](docs/status.md)를 참고하세요.
+페이지와 주차장 데이터는 정적 파일이고, 장소명 검색만 Cloudflare Pages Function을 사용합니다.
+이제 일반 빌드에는 `NAVER_MAP_CLIENT_ID`가 필요합니다. 설정 전에는 `python scripts/build_site.py --preview`로 `.preview/`를 생성하세요.
+
 전국 **무료주차장**을 지도로 보여주는 정적 사이트.
 공공데이터를 미리 받아 HTML/JSON으로 구워두기 때문에 서버가 필요 없고,
 Cloudflare Pages에 그대로 올리면 끝난다.

@@ -344,13 +344,26 @@ PAGE = """<!doctype html>
 # 공유 썸네일 주소는 페이지마다 같으므로 템플릿에서 한 번만 박아 넣는다.
 PAGE = PAGE.replace("{{SITE}}", SITE_URL)
 
-MAP_HEAD = (
-    '<link rel="stylesheet" '
-    'href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">'
-)
+# 네이버 지도 Client ID. HTML 소스에 그대로 실리는 공개 값이고 등록된
+# 도메인에서만 동작한다. 기본값이 없으면 매월 자동 갱신 빌드가 멈춘다.
+NAVER_MAP_CLIENT_ID = env("NAVER_MAP_CLIENT_ID", "y4040h6goe")
+MAP_HEAD = ""
 MAP_SCRIPTS = (
-    '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>'
-)
+    '<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=%s&amp;submodules=geocoder"></script>'
+    % urllib.parse.quote(NAVER_MAP_CLIENT_ID, safe="")
+) if NAVER_MAP_CLIENT_ID else ""
+
+
+def destination_search():
+    return ('<section class="destination-search" aria-label="목적지 검색">'
+            '<form id="destination-form" role="search">'
+            '<label for="destination-query">어디에 주차하시나요?</label>'
+            '<div class="search-input-row"><input id="destination-query" type="search" '
+            'placeholder="장소명 또는 도로명 주소 검색" minlength="2" maxlength="100" required '
+            'autocomplete="off"><button class="btn primary" type="submit">검색</button></div>'
+            '</form><p id="destination-status" role="status" aria-live="polite"></p>'
+            '<div id="destination-results" aria-label="목적지 검색 결과"></div></section>')
+
 
 
 def e(text):
@@ -733,7 +746,8 @@ def build_region_page(sido, sigungu, rows, siblings):
             + ([("요일별 무료", "%d곳" % len(partly))] if partly else [])
             + ([("유료", "%d곳" % len(paid))] if paid else [])
             + [("전체 주차면", format(total_slots, ",") + "면")])
-        + '<div id="map"></div>'
+        + destination_search()
+        + '<div id="map" role="region" aria-label="주차장 지도"></div>'
         + listbar_block()
         # 공유는 목록 앞에 둔다. 목록이 수백 장까지 늘어나기 때문에 뒤에 두면
         # 화면상 만 픽셀 아래로 밀려 아무도 못 본다.
@@ -754,7 +768,7 @@ def build_region_page(sido, sigungu, rows, siblings):
     )
 
     config = {
-        "mode": "region",
+        "mode": "region", "indexUrl": "/data/index.json", "dataBase": "/data/",
         "kakaoKey": KAKAO_JS_KEY,
         "dataUrl": "../../data/%s/%s.json" % (sido, sigungu),
         "ad": {"client": ADSENSE_CLIENT, "slot": AD_SLOTS["feed"]}
@@ -840,7 +854,8 @@ def build_home(index, total, total_slots, top_regions, free_total):
         + '<p class="cta"><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button>'
           '<button type="button" class="btn" id="install-app" hidden>앱 설치 바로가기</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
-        + '<div id="map"></div>'
+        + destination_search()
+        + '<div id="map" role="region" aria-label="주차장 지도"></div>'
         + listbar_block(hidden=True)
         # 지역 페이지와 같은 이유로 공유를 목록 앞에 둔다.
         + share_bar("전국 주차장 요금 지도, 필요한 사람에게 보내주세요")
@@ -1025,6 +1040,8 @@ def write_support_files(urls, dates):
 def reset_dist():
     """dist를 비운다. OneDrive/백신이 폴더 핸들을 잡고 있으면 rmtree가 실패하므로
     몇 번 재시도하고, 그래도 안 되면 파일만 지워서 이어서 진행한다."""
+    if os.path.realpath(DIST) not in {os.path.realpath(os.path.join(ROOT, name)) for name in ("dist", ".preview")}:
+        raise RuntimeError("허용된 출력 폴더가 아닙니다.")
     for _ in range(5):
         if not os.path.isdir(DIST):
             break
@@ -1064,6 +1081,8 @@ def load_parking():
 
 
 def main():
+    if os.path.basename(DIST) == "dist" and not NAVER_MAP_CLIENT_ID:
+        raise SystemExit("NAVER_MAP_CLIENT_ID 설정이 필요합니다. 연결 전 화면 점검은 --preview를 사용하세요.")
     raw = load_parking()
     rows = dedupe(normalize_parking(raw))
     free_n = sum(1 for r in rows if r["fr"])
@@ -1164,4 +1183,11 @@ def main():
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--preview", action="store_true", help="운영 dist를 보존하고 .preview에 생성")
+    if parser.parse_args().preview:
+        DIST = os.path.join(ROOT, ".preview")
+        LASTMOD_PATH = os.path.join(DIST, "lastmod.json")
+        ADSENSE_CLIENT = ""
     main()

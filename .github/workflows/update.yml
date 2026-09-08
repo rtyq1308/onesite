@@ -33,6 +33,7 @@ jobs:
 
       - name: 정적 사이트 생성
         env:
+          NAVER_MAP_CLIENT_ID: ${{ vars.NAVER_MAP_CLIENT_ID }}
           SITE_URL: ${{ vars.SITE_URL }}
           ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
           ADSENSE_SLOT_TOP: ${{ vars.ADSENSE_SLOT_TOP }}

@@ -8,7 +8,8 @@
               origin: null, adPlaced: false, onlyFree: false,
               // 홈 첫 화면 둘러보기 모드
               browse: false, clusters: null, clustersWide: null, clusterLayer: null,
-              browseCache: {}, browseLoading: false, popupOpen: false };
+              browseCache: {}, browseLoading: false, popupOpen: false,
+              escapeShown: false };
 
   /* ---------- 유틸 ---------- */
 
@@ -162,7 +163,7 @@
     if (!box) return;
 
     if (!rows.length) {
-      box.innerHTML = '<p class="empty">이 지역에는 등록된 주차장이 없습니다.</p>';
+      box.innerHTML = '<p class="empty">' + (state.onlyFree ? '조건에 맞는 상시 무료 주차장이 없습니다. 전체 주차장도 확인해보세요.' : '이 주변에서 등록된 주차장을 찾지 못했습니다.') + '</p>';
     } else {
       box.innerHTML = rows.slice(0, 300).map(function (r, i) {
         return itemHTML(r, i);
@@ -209,16 +210,16 @@
   var LABEL_MAX = 260;   // 한 화면에 그릴 글자 라벨 상한
 
   function declutter() {
-    var bounds = state.map.getBounds().pad(0.2);
+    var bounds = state.map.getBounds();
     var placed = [], labeled = [], dots = [];
 
     for (var i = 0; i < state.rows.length; i++) {
       var r = state.rows[i];
-      if (!bounds.contains([r.la, r.lo])) continue;
+      if (!bounds.hasLatLng(new naver.maps.LatLng(r.la, r.lo))) continue;
       // 화면 안에 있으면 하나도 빼지 않는다. 라벨 자리가 없으면 점으로 남긴다.
       if (labeled.length + dots.length >= 3000) break;
 
-      var pt = state.map.latLngToLayerPoint([r.la, r.lo]);
+      var pt = state.map.getProjection().fromCoordToOffset(new naver.maps.LatLng(r.la, r.lo));
 
       // state.rows 가 무료 → 요일별 → 싼 유료 순이라, 앞에서부터 자리를
       // 채우면 무료가 언제나 먼저 라벨을 가져간다. 유료에 밀리는 일은 없다.
@@ -244,7 +245,7 @@
   }
 
   // 점 수백 개를 DOM 으로 그리면 느리다. 캔버스 한 장에 그린다.
-  var dotRenderer = null;
+
 
   var DOT_COLOR = {
     free: "#1a7a5c", partly: "#c2820a", paid: "#2f5fb8", unknown: "#6b7280"
@@ -271,106 +272,84 @@
       "</div>";
   }
 
-  function renderMarkers() {
-    if (!state.map) return;
-    if (state.layer) state.map.removeLayer(state.layer);
-    if (!state.rows.length) return;
-
-    var picked = declutter();
-
-    // 라벨에 밀린 곳은 점으로. 팝업은 라벨과 똑같이 붙여서 눌러볼 수 있게 한다.
-    var markers = picked.dots.map(function (item) {
-      var r = item.row, i = item.idx;
-      var c = DOT_COLOR[kindOf(r)];
-      return L.circleMarker([r.la, r.lo], {
-        renderer: dotRenderer,
-        radius: 4, weight: 1, color: "#fff", fillColor: c, fillOpacity: 0.95
-      }).bindPopup(popupHTML(r, i), { minWidth: 210, maxWidth: 260 });
+  function clearMarkers(markers) {
+    (markers || []).forEach(function (marker) {
+      naver.maps.Event.clearInstanceListeners(marker);
+      marker.setMap(null);
     });
-
-    markers = markers.concat(picked.labeled.map(function (item) {
-      var r = item.row, i = item.idx;
-      // 무료는 초록 "무료", 요일별은 주황 요일, 유료는 파랑 30분 요금.
-      var kind = kindOf(r);
-      // 원 대신 글자 박스. 지도만 봐도 공짜인지 얼마인지 읽히게 한다.
-      var label =
-        kind === "free" ? "무료" :
-        kind === "partly" ? r.fl[0].replace(" 무료개방", "").replace(" 무료", "") :
-        kind === "paid" ? won(r.p30) :
-        "유료";
-      var icon = L.divIcon({
-        className: "pin pin-" + kind,
-        html: "<span>" + esc(label) + "</span>",
-        iconSize: null
-      });
-
-      return L.marker([r.la, r.lo], { icon: icon, riseOnHover: true })
-        .bindPopup(popupHTML(r, i), { minWidth: 210, maxWidth: 260 });
-    }));
-    state.layer = L.layerGroup(markers).addTo(state.map);
   }
 
-  /* 전체 데이터가 다 보이도록 한 번만 맞춘다.
-     animate:false 인 이유: 애니메이션 줌은 CSS 트랜지션 완료 이벤트에 의존하는데,
-     백그라운드 탭처럼 트랜지션이 스로틀링되면 그 이벤트가 오지 않아 지도가 멈춘다.
-     maxZoom 은 주차장이 한두 곳뿐인 지역에서 골목까지 확대되는 것을 막는다. */
+  function closePopup() {
+    if (state.infoWindow) state.infoWindow.close();
+    state.popupOpen = false;
+  }
+
+  function renderMarkers() {
+    if (!state.map) return;
+    clearMarkers(state.layer);
+    state.layer = [];
+    if (!state.rows.length) return;
+    var picked = declutter();
+    picked.labeled.concat(picked.dots).forEach(function (item, idx) {
+      var r = item.row, kind = kindOf(r);
+      var label = kind === "free" ? "무료" : kind === "partly"
+        ? r.fl[0].replace(" 무료개방", "").replace(" 무료", "")
+        : kind === "paid" ? won(r.p30) : "유료";
+      var isDot = idx >= picked.labeled.length;
+      var marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(r.la, r.lo), map: state.map,
+        title: r.nm + " · " + label,
+        icon: { content: isDot
+          ? '<button class="map-dot" aria-label="' + esc(r.nm + " " + label) + '" style="background:' + DOT_COLOR[kind] + '"></button>'
+          : '<button class="pin pin-' + kind + '"><span>' + esc(label) + '</span></button>',
+          anchor: new naver.maps.Point(isDot ? 5 : 24, isDot ? 5 : 12) }
+      });
+      naver.maps.Event.addListener(marker, "click", function () {
+        closePopup();
+        state.infoWindow = new naver.maps.InfoWindow({
+          content: '<div class="naver-popup"><button class="popup-close" aria-label="상세 닫기" type="button">×</button>' + popupHTML(r, item.idx) + '</div>',
+          borderWidth: 0, backgroundColor: "transparent", disableAutoPan: true
+        });
+        state.popupOpen = true;
+        state.infoWindow.open(state.map, marker);
+      });
+      state.layer.push(marker);
+    });
+  }
+
   function fitAll() {
     if (!state.map || !state.rows.length) return;
-    state.map.fitBounds(
-      L.latLngBounds(state.rows.map(function (r) { return [r.la, r.lo]; })).pad(0.15),
-      { animate: false, maxZoom: 15 }
-    );
+    if (state.origin) {
+      state.map.setCenter(new naver.maps.LatLng(state.origin[0], state.origin[1]));
+      state.map.setZoom(15, false);
+      return;
+    }
+    var first = new naver.maps.LatLng(state.rows[0].la, state.rows[0].lo);
+    var bounds = new naver.maps.LatLngBounds(first, first);
+    state.rows.forEach(function (r) { bounds.extend(new naver.maps.LatLng(r.la, r.lo)); });
+    state.map.fitBounds(bounds, { top: 35, right: 35, bottom: 35, left: 35 });
+    if (state.map.getZoom() > 16) state.map.setZoom(16, false);
   }
 
   function initMap() {
     var node = el("#map");
-    if (!node || typeof L === "undefined") return;
-    state.map = L.map(node, { scrollWheelZoom: true, preferCanvas: true })
-      .setView([36.5, 127.8], 7);
-    dotRenderer = L.canvas({ padding: 0.3 });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(state.map);
-
-    // Leaflet 은 만들어질 때의 크기를 기억한다. 휴대폰을 가로로 눕히면 그 값이
-    // 어긋나 타일이 엉뚱하게 깔리므로, 크기가 바뀌면 다시 계산하게 한다.
-    var resizeTimer;
-    function refit() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function () {
-        if (!state.map) return;
-        state.map.invalidateSize();
-        fitAll();
-      }, 200);
+    if (!node) return;
+    if (!window.naver || !naver.maps || !naver.maps.Map) {
+      node.innerHTML = '<p class="map-unavailable" role="status">지도를 불러오지 못했습니다. 잠시 후 다시 시도해주세요. 지역별 주차장 목록은 계속 확인할 수 있습니다.</p>';
+      return;
     }
-    window.addEventListener("resize", refit);
-    window.addEventListener("orientationchange", refit);
-
-    // 확대하면 가려졌던 곳이 하나씩 드러난다.
-    var drawTimer;
-    function redraw() {
-      clearTimeout(drawTimer);
-      drawTimer = setTimeout(function () {
-        // 다시 그리면 마커를 통째로 갈아끼우기 때문에 열려 있던 팝업이 닫힌다.
-        // 팝업이 열릴 때 지도가 살짝 움직이면(autoPan) moveend 가 따라 들어와
-        // 방금 연 팝업이 바로 사라진다. 그래서 열려 있는 동안은 미뤄둔다.
-        if (state.popupOpen) return;
-        if (state.browse) refreshBrowse();
-        else renderMarkers();
-      }, 120);
-    }
-
-    state.map.on("moveend zoomend", redraw);
-    // 팝업이 열린 동안에는 +/- 확대 버튼을 흐리게 해서 상세 내용을 가리지 않게 한다.
-    state.map.on("popupopen", function () {
-      state.popupOpen = true;
-      node.classList.add("popup-open");
+    state.map = new naver.maps.Map(node, {
+      center: new naver.maps.LatLng(36.5, 127.8), zoom: 7,
+      minZoom: 6, maxZoom: 19, zoomControl: true,
+      zoomControlOptions: { position: naver.maps.Position.TOP_RIGHT }
     });
-    state.map.on("popupclose", function () {
-      state.popupOpen = false;
-      node.classList.remove("popup-open");
-      redraw();   // 닫힌 뒤에 미뤄둔 갱신을 한 번 돌려준다
+    naver.maps.Event.addListener(state.map, "idle", function () {
+      if (state.popupOpen) return;
+      if (state.browse) refreshBrowse(); else renderMarkers();
+    });
+    naver.maps.Event.addListener(state.map, "click", closePopup);
+    document.addEventListener("click", function (event) {
+      if (event.target.closest(".popup-close")) closePopup();
     });
   }
 
@@ -419,7 +398,7 @@
 
   function clearClusters() {
     if (state.clusterLayer) {
-      state.map.removeLayer(state.clusterLayer);
+      clearMarkers(state.clusterLayer);
       state.clusterLayer = null;
     }
   }
@@ -431,32 +410,27 @@
   }
 
   function drawClusters() {
-    if (!state.clusters) return;
+    if (!state.clusters || !state.map) return;
     clearClusters();
     var zoom = state.map.getZoom();
-    // 전국을 다 보는 배율에서 시군구 220개를 뿌리면 서로 겹쳐 못 읽는다.
     var cells = zoom < WIDE_ZOOM ? (state.clustersWide || []) : state.clusters;
-    var bounds = state.map.getBounds().pad(0.1);
-    var marks = [];
+    var bounds = state.map.getBounds();
+    state.clusterLayer = [];
     cells.forEach(function (c) {
-      if (!bounds.contains(c.c)) return;
-      var n = c.f || c.p;
-      // 자릿수가 늘면 원이 아니라 알약 모양으로 늘어난다(CSS min-width).
-      var icon = L.divIcon({
-        className: "cluster" + (c.f ? "" : " cluster-pay") + (n >= 100 ? " cluster-lg" : ""),
-        html: "<span>" + n.toLocaleString() + "</span>",
-        iconSize: null
+      var pos = new naver.maps.LatLng(c.c[0], c.c[1]);
+      if (!bounds.hasLatLng(pos)) return;
+      var count = c.f || c.p;
+      var marker = new naver.maps.Marker({ position: pos, map: state.map,
+        title: c.nm + " · 무료 " + c.f + "곳 / 전체 " + c.p + "곳",
+        icon: { content: '<button class="cluster' + (c.f ? '' : ' cluster-pay') + '"><span>' + count.toLocaleString() + '</span></button>',
+          anchor: new naver.maps.Point(24, 20) }
       });
-      marks.push(
-        L.marker(c.c, { icon: icon, riseOnHover: true })
-          .bindTooltip(c.nm + " · 무료 " + c.f.toLocaleString() + "곳 / 전체 " + c.p.toLocaleString() + "곳")
-          .on("click", function () {
-            var to = state.map.getZoom() < WIDE_ZOOM ? WIDE_ZOOM + 1 : DETAIL_ZOOM + 1;
-            state.map.setView(c.c, to, { animate: false });
-          })
-      );
+      naver.maps.Event.addListener(marker, "click", function () {
+        state.map.setCenter(pos);
+        state.map.setZoom(zoom < WIDE_ZOOM ? WIDE_ZOOM + 1 : DETAIL_ZOOM + 1, false);
+      });
+      state.clusterLayer.push(marker);
     });
-    state.clusterLayer = L.layerGroup(marks).addTo(state.map);
   }
 
   /* 화면 안 시군구 파일만 받아 낱개 마커로 보여준다. */
@@ -466,7 +440,7 @@
     // 시군구 하나보다 작아져 아무것도 안 잡힌다. 화면 중심에서 가까운 순으로 고른다.
     var centre = state.map.getCenter();
     var near = state.clusters.map(function (c) {
-      return { c: c, km: distanceKm(centre.lat, centre.lng, c.c[0], c.c[1]) };
+      return { c: c, km: distanceKm(centre.lat(), centre.lng(), c.c[0], c.c[1]) };
     }).filter(function (x) { return x.km < 80; });
     near.sort(function (a, b) { return a.km - b.km; });
     near = near.slice(0, BROWSE_MAX_FILES).map(function (x) { return x.c; });
@@ -481,6 +455,7 @@
         var got = state.browseCache[c.sido + "/" + c.nm];
         if (got) rows = rows.concat(got);
       });
+      if (!state.browse) return;
       state.rows = rows;
       renderMarkers();
     }
@@ -499,7 +474,7 @@
   }
 
   function refreshBrowse() {
-    if (!state.map || !state.clusters) return;
+    if (!state.browse || !state.map || !state.clusters) return;
     if (state.map.getZoom() >= DETAIL_ZOOM) {
       clearClusters();
       loadDetail();
@@ -532,15 +507,18 @@
     var box = el("#nearby-msg");
     if (!box) return;
     var ios = isIOSDevice();
+    // 눌러야 할 대상은 크게 강조한다(.hl). 나머지는 escape 처리한 평문이다.
+    var hl = function (text) { return '<b class="hl">' + esc(text) + "</b>"; };
+
     var hint = ios
       ? "오른쪽 아래 나침반 모양(사파리) 아이콘, 또는 오른쪽 위 ··· 를 눌러 " +
-        "“Safari에서 열기”를 선택해주세요."
-      : "아래 “크롬으로 열기”를 누르면 바로 이동합니다.";
+        esc("“") + hl("Safari에서 열기") + esc("”를 선택해주세요.")
+      : "아래 " + esc("“") + hl("크롬으로 열기") + esc("”를 누르면 바로 이동합니다.");
 
     // 안내를 한 줄로 붙이면 길어서 읽히지 않는다. 사정과 해결책을 줄로 나눈다.
     var html = "<b>" + esc(reason) + "</b><br>" +
       esc(detail || "지금은 앱 안에서 열려 있어 위치 권한을 쓸 수 없습니다.") +
-      "<br>" + esc(hint);
+      "<br>" + hint;
 
     if (ios) {
       html += '<br><button type="button" class="btn" style="margin-top:8px" ' +
@@ -548,15 +526,19 @@
     } else {
       var url = "intent://" + location.host + location.pathname +
         "#Intent;scheme=https;package=com.android.chrome;end";
-      html += '<br><a class="btn" style="margin-top:8px" href="' + esc(url) + '">크롬으로 열기</a>';
+      html += '<br><a class="btn danger" style="margin-top:8px" href="' + esc(url) +
+        '">크롬으로 열기</a>';
     }
     // 한 번 나가면 다시 앱 안에서 열 일이 없도록 설치까지 권한다.
     html += '<br><span class="note" style="display:block;margin-top:8px">' +
       (ios
-        ? "사파리에서 연 뒤 “앱 설치 바로가기”를 누르면 홈 화면에서 바로 열 수 있습니다."
-        : "크롬에서 “앱 설치 바로가기”를 누르면 다음부터는 앱으로 바로 열립니다.") +
+        ? "사파리에서 연 뒤 " + esc("“") + hl("앱 설치 바로가기") +
+          esc("”를 누르면 홈 화면에서 바로 열 수 있습니다.")
+        : "크롬에서 " + esc("“") + hl("앱 설치 바로가기") +
+          esc("”를 누르면 다음부터는 앱으로 바로 열립니다.")) +
       "</span>";
     box.innerHTML = html;
+    state.escapeShown = true;
     // bindShare() 를 다시 부르면 기존 버튼에 리스너가 겹쳐 붙는다. 여기만 직접 건다.
     var copyBtn = el("#escape-copy");
     if (copyBtn) {
@@ -591,6 +573,7 @@
       // 기다리게 두면 그 사이에 나가버리므로, 2초만 보고 먼저 안내를 띄운다.
       // 늦게라도 위치가 오면 그때 결과로 덮어쓴다.
       var settled = false;
+      state.escapeShown = false;
       var watchdog = inAppBrowser() ? setTimeout(function () {
         if (settled) return;
         btn.disabled = false;
@@ -612,7 +595,10 @@
         btn.disabled = false;
         btn.textContent = "내 주변 찾기";
         if (inAppBrowser()) {
-          showEscapeGuide("위치를 가져오지 못했습니다.");
+          // 감시 타이머가 이미 같은 안내를 띄웠다면 그대로 둔다.
+          // 몇 초 뒤에 문구가 바뀌면 읽던 사람이 헷갈린다.
+          if (!state.escapeShown) showEscapeGuide("앱 안에서는 위치를 쓸 수 없습니다.",
+            "스레드·인스타그램 같은 앱 안에서는 위치 권한이 막혀 있습니다.");
         } else {
           el("#nearby-msg").textContent =
             "위치 권한이 거부되었습니다. 아래에서 지역을 직접 골라주세요.";
@@ -628,9 +614,14 @@
     });
   }
 
-  function loadNearby() {
+  var nearbyRequest = 0;
+  function loadNearby(destinationName) {
+    var requestId = ++nearbyRequest;
+    var origin = state.origin.slice();
+    closePopup();
+    stopBrowse();
     var btn = el("#nearby");
-    var msg = el("#nearby-msg");
+    var msg = destinationName ? el("#destination-status") : el("#nearby-msg");
 
     // 둘러보기 지도가 이미 받아둔 지역 목록을 그대로 쓴다. 같은 파일을
     // 다시 받으면 왕복 한 번이 통째로 더 붙는다.
@@ -646,15 +637,17 @@
         return out;
       });
 
-    ready.then(function (list) {
+    return ready.then(function (list) {
+      if (requestId !== nearbyRequest) return;
       var cells = list.map(function (c) {
         return {
           sido: c.sido, sigungu: c.nm,
-          km: distanceKm(state.origin[0], state.origin[1], c.c[0], c.c[1])
+          km: distanceKm(origin[0], origin[1], c.c[0], c.c[1])
         };
       });
       cells.sort(function (a, b) { return a.km - b.km; });
-      var picks = cells.slice(0, 5);
+      var picks = cells.slice(0, 8);
+      if (!picks.length) throw new Error("지역 데이터가 없습니다.");
       msg.textContent = picks.map(function (c) { return c.sigungu; }).join(", ") + " 데이터를 불러오는 중…";
 
       return Promise.all(picks.map(function (c) {
@@ -667,35 +660,118 @@
           return rows;
         });
       })).then(function (files) {
+        if (requestId !== nearbyRequest) return;
         var merged = [];
         files.forEach(function (rows) { merged = merged.concat(rows); });
         merged.forEach(function (r) {
-          r._km = distanceKm(state.origin[0], state.origin[1], r.la, r.lo);
+          r._km = distanceKm(origin[0], origin[1], r.la, r.lo);
         });
         merged.sort(function (a, b) { return a._km - b._km; });
         state.all = merged.slice(0, 300);
 
         stopBrowse();   // 내 주변 결과로 전환한다
-        el("#nearby-result").hidden = false;
+        if (el("#nearby-result")) el("#nearby-result").hidden = false;
         var bar = el("#listbar");
         if (bar) bar.hidden = false;   // 홈에서는 찾기 전까지 감춰둔다
         applyFilter();
         var freeCount = state.all.filter(function (r) { return r.fr; }).length;
-        msg.textContent = picks[0].sido + " " + picks[0].sigungu + " 부근 " +
-          state.rows.length.toLocaleString() + "곳을 가까운 순으로 보여줍니다" +
+        msg.textContent = (destinationName || "현재 위치") + " 주변 " +
+          state.rows.length.toLocaleString() + "곳을 직선거리 순으로 보여줍니다 (인근 지역 데이터 기준)" +
           (freeCount ? " (무료 " + freeCount.toLocaleString() + "곳)" : "") + ".";
-        btn.textContent = "다시 찾기";
-        btn.disabled = false;
+        if (btn) { btn.textContent = "다시 찾기"; btn.disabled = false; }
         if (state.map) {
-          L.circleMarker(state.origin, {
-            radius: 8, color: "#d94848", fillColor: "#d94848", fillOpacity: 0.9
-          }).addTo(state.map).bindPopup("현재 위치");
+          if (state.originMarker) state.originMarker.setMap(null);
+          state.originMarker = new naver.maps.Marker({ map: state.map,
+            position: new naver.maps.LatLng(origin[0], origin[1]),
+            title: destinationName || "현재 위치",
+            icon: { content: '<span class="origin-pin">' + esc(destinationName ? "목적지" : "내 위치") + '</span>', anchor: new naver.maps.Point(25, 30) }
+          });
         }
       });
     }).catch(function (err) {
-      btn.disabled = false;
-      btn.textContent = "내 주변 찾기";
+      if (requestId !== nearbyRequest) return;
+      if (btn) { btn.disabled = false; btn.textContent = "내 주변 찾기"; }
       msg.textContent = "불러오기 실패: " + err.message;
+    });
+  }
+
+  /* 장소명은 서버의 지역 검색, 주소는 지도 Geocoder로 조회한다. */
+  function geocodeAddress(query) {
+    return new Promise(function (resolve) {
+      if (!window.naver || !naver.maps || !naver.maps.Service) return resolve([]);
+      var timer = setTimeout(function () { resolve([]); }, 6500);
+      naver.maps.Service.geocode({ query: query }, function (status, response) {
+        clearTimeout(timer);
+        if (status !== naver.maps.Service.Status.OK) return resolve([]);
+        resolve(((response.v2 || {}).addresses || []).slice(0, 5).map(function (r) {
+          return { name: r.roadAddress || r.jibunAddress, address: r.jibunAddress,
+            lat: Number(r.y), lng: Number(r.x) };
+        }).filter(validDestination));
+      });
+    });
+  }
+
+  function validDestination(item) {
+    return item && typeof item.name === "string" && Number.isFinite(item.lat) && Number.isFinite(item.lng) &&
+      item.lat >= 33 && item.lat <= 39.5 && item.lng >= 124 && item.lng <= 132;
+  }
+
+  function bindDestinationSearch() {
+    var form = el("#destination-form");
+    if (!form) return;
+    var input = el("#destination-query"), results = el("#destination-results"), msg = el("#destination-status");
+    var searchId = 0, controller;
+    input.addEventListener("input", function () {
+      searchId++;
+      if (controller) controller.abort();
+      results.replaceChildren();
+      msg.textContent = "";
+      form.removeAttribute("aria-busy");
+    });
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var query = input.value.trim();
+      if (query.length < 2 || query.length > 100) { msg.textContent = "검색어를 2~100자로 입력해주세요."; return; }
+      var id = ++searchId;
+      if (controller) controller.abort();
+      controller = new AbortController();
+      var thisController = controller;
+      var timer = setTimeout(function () { thisController.abort(); }, 7000);
+      results.replaceChildren();
+      msg.textContent = "목적지를 찾고 있습니다…";
+      form.setAttribute("aria-busy", "true");
+      var unavailable = false;
+      fetch("/api/places?q=" + encodeURIComponent(query), { signal: controller.signal, cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error("unavailable"); return r.json(); })
+        .then(function (data) { return (data.items || []).filter(validDestination); })
+        .catch(function () { unavailable = true; return []; })
+        .then(function (items) { clearTimeout(timer); if (id !== searchId) return []; return items.length ? items : geocodeAddress(query); })
+        .then(function (items) {
+          if (id !== searchId) return;
+          form.removeAttribute("aria-busy");
+          msg.textContent = items.length ? "목적지를 선택하면 주변 주차장을 보여드립니다."
+            : unavailable ? "장소 검색을 지금 이용할 수 없습니다. 도로명 주소로 다시 검색하거나 지역 목록을 이용해주세요."
+            : "검색 결과가 없습니다. 지역명을 함께 입력하거나 도로명 주소로 검색해주세요.";
+          items.forEach(function (item) {
+            var button = document.createElement("button");
+            button.type = "button"; button.className = "destination-option";
+            var title = document.createElement("strong"), address = document.createElement("span");
+            title.textContent = item.name; address.textContent = item.address || "";
+            button.append(title, address);
+            button.addEventListener("click", function () {
+              searchId++;
+              state.origin = [item.lat, item.lng];
+              results.replaceChildren();
+              msg.textContent = item.name + " 주변 주차장을 불러옵니다…";
+              loadNearby(item.name);
+            });
+            results.appendChild(button);
+          });
+        }).catch(function () {
+          if (id !== searchId) return;
+          form.removeAttribute("aria-busy");
+          msg.textContent = "검색 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        });
     });
   }
 
@@ -877,7 +953,7 @@
       if (!btn) return;
       var card = document.getElementById("spot-" + btn.dataset.goto);
       if (!card) return;
-      if (state.map) state.map.closePopup();
+      closePopup();
       card.scrollIntoView({ behavior: "smooth", block: "center" });
       card.classList.add("hit");
       setTimeout(function () { card.classList.remove("hit"); }, 2000);
@@ -1020,6 +1096,7 @@
     bindKakaoApp();
     bindRouteTracking();
     bindFilter();
+    bindDestinationSearch();
     bindInstall();
     registerSW();
     if (CFG.mode === "region") startRegionPage();

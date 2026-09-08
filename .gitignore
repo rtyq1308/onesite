@@ -9,3 +9,7 @@ __pycache__/
 Thumbs.db
 # 인증키는 어떤 것도 올라가면 안 된다
 data/*.key
+.preview/
+.wrangler/
+.dev.vars*
+.env*

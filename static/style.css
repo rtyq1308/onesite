@@ -255,6 +255,24 @@ footer.site a {
   z-index: 1;
 }
 
+/* 목적지를 먼저 고르고 지도와 목록에서 주변 주차장을 비교한다. */
+.destination-search { background: var(--card); padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); margin-top: 18px; }
+.destination-search label { display: block; font-weight: 700; margin-bottom: 10px; }
+.search-input-row { display: flex; gap: 8px; }
+.search-input-row input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 13px; font: inherit; color: var(--text); background: var(--card); }
+.destination-search :focus-visible { outline: 3px solid #28765d; outline-offset: 3px; }
+#destination-status { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.destination-option { display: flex; flex-direction: column; width: 100%; text-align: left; gap: 4px; padding: 14px 8px; border: 0; border-bottom: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+.destination-option span { color: var(--muted); font-size: 13px; }
+.destination-option:hover { background: var(--accent-soft); }
+.map-unavailable { padding: 35px 24px; color: var(--muted); line-height: 1.8; }
+.naver-popup { position: relative; padding: 20px 16px 16px; width: 270px; max-width: 75vw; border-radius: 12px; background: var(--card); color: var(--text); box-shadow: 0 4px 20px #0003; }
+.popup-close { position: absolute; right: 2px; top: 0; border: 0; background: transparent; font-size: 24px; cursor: pointer; color: var(--text); }
+button.pin, button.cluster { border: 0; padding: 0; background: transparent; font: inherit; cursor: pointer; }
+button.pin span, button.cluster span { position: static; transform: none; }
+.map-dot { width: 10px; height: 10px; border: 1px solid white; border-radius: 50%; padding: 0; cursor: pointer; }
+.origin-pin { display: block; white-space: nowrap; padding: 5px 9px; border-radius: 8px; background: #b82b45; color: white; font-size: 12px; font-weight: 700; border: 2px solid white; }
+
 /* 팝업이 열리면 +/- 버튼이 상세 내용을 가린다. 흐리게 비켜준다.
    마우스를 올리면 다시 진해져서 확대·축소는 그대로 쓸 수 있다. */
 #map.popup-open .leaflet-control-zoom { opacity: .25; transition: opacity .15s ease; }
@@ -522,6 +540,26 @@ main.wrap code {
 }
 .btn.kakao:hover,
 .act.kakao:hover { border-color: #c9b400; filter: brightness(1.03); }
+
+/* 인앱 안내에서 '눌러야 할 것'만 크게 강조한다. */
+.hl {
+  font-size: 1.5em;
+  font-weight: 800;
+  color: #c0281c;
+  letter-spacing: -0.02em;
+}
+@media (prefers-color-scheme: dark) {
+  .hl { color: #ff8a7a; }
+}
+
+/* 인앱 탈출 버튼. 초록 버튼들 사이에서 확실히 구분되게 빨강으로 둔다. */
+.btn.danger {
+  background: linear-gradient(#e0503f, #c0281c);
+  border-color: #9c1f14;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .2), inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.btn.danger:hover { border-color: #7e180f; filter: brightness(1.05); }
 
 /* 인스타그램 브랜드 그라데이션 */
 .btn.instagram {
