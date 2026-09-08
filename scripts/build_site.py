@@ -811,9 +811,6 @@ def build_home(index, total, total_slots, top_regions, free_total):
         + '<p class="lead">공짜로 댈 수 있는 곳은 “무료”로, 돈을 내야 하는 곳은 '
           "30분 요금으로 지도에 바로 띄웁니다. 전국 주차장 %s곳 가운데 "
           "상시 무료가 %s곳입니다.</p>" % (count_text, format(free_total, ","))
-        + stat_block([("무료주차장", format(free_total, ",") + "곳"),
-                      ("전체 주차장", count_text + "곳"),
-                      ("갱신일 · 매월 자동 갱신", TODAY)])
         + '<p class="cta"><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button>'
           '<button type="button" class="btn" id="install-app" hidden>앱 설치 바로가기</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
@@ -834,6 +831,10 @@ def build_home(index, total, total_slots, top_regions, free_total):
           "요금이 무료로 등록된 주차장만 추려 매달 자동으로 갱신합니다. 노상·노외·부설 주차장이 "
           "모두 포함되며, 각 무료주차장의 주차면수와 운영시간을 함께 보여줍니다. 서버 없이 미리 "
           "만들어 둔 파일만 내려받는 구조라 지역을 눌러도 바로 열립니다.</p>"
+        # 요약 숫자는 첫 화면을 밀어내지 않게 맨 아래에 둔다.
+        + stat_block([("무료주차장", format(free_total, ",") + "곳"),
+                      ("전체 주차장", count_text + "곳"),
+                      ("갱신일 · 매월 자동 갱신", TODAY)])
     )
 
     site_ld = {
