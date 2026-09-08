@@ -528,7 +528,7 @@
   /* 안드로이드는 intent 로 크롬을 직접 띄울 수 있으니 버튼 하나로 끝낸다.
      iOS 에는 그런 통로가 없어 사파리로 나가는 메뉴 위치를 글로 알려주고
      주소 복사를 남겨둔다. */
-  function showEscapeGuide(reason) {
+  function showEscapeGuide(reason, detail) {
     var box = el("#nearby-msg");
     if (!box) return;
     var ios = isIOSDevice();
@@ -539,7 +539,8 @@
 
     // 안내를 한 줄로 붙이면 길어서 읽히지 않는다. 사정과 해결책을 줄로 나눈다.
     var html = "<b>" + esc(reason) + "</b><br>" +
-      "지금은 앱 안에서 열려 있어 위치 권한을 쓸 수 없습니다.<br>" + esc(hint);
+      esc(detail || "지금은 앱 안에서 열려 있어 위치 권한을 쓸 수 없습니다.") +
+      "<br>" + esc(hint);
 
     if (ios) {
       html += '<br><button type="button" class="btn" style="margin-top:8px" ' +
@@ -585,10 +586,29 @@
       }
       btn.disabled = true;
       btn.textContent = "위치 확인 중…";
+
+      // 인앱 브라우저는 권한이 막혀 있어도 실패를 늦게 알려준다. 7~8초를
+      // 기다리게 두면 그 사이에 나가버리므로, 2초만 보고 먼저 안내를 띄운다.
+      // 늦게라도 위치가 오면 그때 결과로 덮어쓴다.
+      var settled = false;
+      var watchdog = inAppBrowser() ? setTimeout(function () {
+        if (settled) return;
+        btn.disabled = false;
+        btn.textContent = "내 주변 찾기";
+        showEscapeGuide("앱 안에서는 위치를 쓸 수 없습니다.",
+          "스레드·인스타그램 같은 앱 안에서는 위치 권한이 막혀 있습니다.");
+      }, 2000) : null;
+
       navigator.geolocation.getCurrentPosition(function (pos) {
+        settled = true;
+        clearTimeout(watchdog);
+        btn.disabled = true;
+        btn.textContent = "위치 확인 중…";
         state.origin = [pos.coords.latitude, pos.coords.longitude];
         loadNearby();
       }, function () {
+        settled = true;
+        clearTimeout(watchdog);
         btn.disabled = false;
         btn.textContent = "내 주변 찾기";
         if (inAppBrowser()) {
@@ -944,6 +964,12 @@
           }
           else promptDismissed = true;
         });
+        return;
+      }
+      if (inAppBrowser()) {
+        // 웹뷰에는 설치 기능 자체가 없다. 브라우저로 나가야 설치가 뜬다.
+        showEscapeGuide("앱 안에서는 설치할 수 없습니다.",
+          "스레드·인스타그램 같은 앱 안에서는 설치 기능이 동작하지 않습니다.");
         return;
       }
       if (wasInstalled()) {
