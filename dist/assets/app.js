@@ -427,7 +427,7 @@
   function stopBrowse() {
     state.browse = false;
     clearClusters();
-    state.browseCache = {};
+    // browseCache 는 비우지 않는다. 이미 받아둔 지역 파일을 '내 주변 찾기'가 재사용한다.
   }
 
   function drawClusters() {
@@ -537,8 +537,9 @@
         "“Safari에서 열기”를 선택해주세요."
       : "아래 “크롬으로 열기”를 누르면 바로 이동합니다.";
 
+    // 안내를 한 줄로 붙이면 길어서 읽히지 않는다. 사정과 해결책을 줄로 나눈다.
     var html = "<b>" + esc(reason) + "</b><br>" +
-      "지금은 앱 안에서 열려 있어 위치 권한을 쓸 수 없습니다. " + esc(hint);
+      "지금은 앱 안에서 열려 있어 위치 권한을 쓸 수 없습니다.<br>" + esc(hint);
 
     if (ios) {
       html += '<br><button type="button" class="btn" style="margin-top:8px" ' +
@@ -596,33 +597,58 @@
           el("#nearby-msg").textContent =
             "위치 권한이 거부되었습니다. 아래에서 지역을 직접 골라주세요.";
         }
-      }, { enableHighAccuracy: true, timeout: 10000 });
+      }, {
+        // GPS 고정밀(enableHighAccuracy)은 위성을 잡느라 7~8초씩 걸린다.
+        // 가까운 주차장을 고르는 데는 와이파이·기지국 기반 수백 m 정확도면 충분하다.
+        // maximumAge 로 최근에 잡아둔 위치가 있으면 즉시 재사용한다.
+        enableHighAccuracy: false,
+        timeout: 6000,
+        maximumAge: 300000
+      });
     });
   }
 
   function loadNearby() {
     var btn = el("#nearby");
     var msg = el("#nearby-msg");
-    getJSON(CFG.indexUrl).then(function (index) {
-      var cells = [];
-      index.sido.forEach(function (sido) {
-        sido.sgg.forEach(function (sgg) {
-          if (!sgg.c) return;
-          cells.push({
-            sido: sido.nm, sigungu: sgg.nm,
-            km: distanceKm(state.origin[0], state.origin[1], sgg.c[0], sgg.c[1])
+
+    // 둘러보기 지도가 이미 받아둔 지역 목록을 그대로 쓴다. 같은 파일을
+    // 다시 받으면 왕복 한 번이 통째로 더 붙는다.
+    var ready = state.clusters
+      ? Promise.resolve(state.clusters)
+      : getJSON(CFG.indexUrl).then(function (index) {
+        var out = [];
+        index.sido.forEach(function (sido) {
+          sido.sgg.forEach(function (sgg) {
+            if (sgg.c) out.push({ sido: sido.nm, nm: sgg.nm, c: sgg.c });
           });
         });
+        return out;
+      });
+
+    ready.then(function (list) {
+      var cells = list.map(function (c) {
+        return {
+          sido: c.sido, sigungu: c.nm,
+          km: distanceKm(state.origin[0], state.origin[1], c.c[0], c.c[1])
+        };
       });
       cells.sort(function (a, b) { return a.km - b.km; });
       var picks = cells.slice(0, 5);
       msg.textContent = picks.map(function (c) { return c.sigungu; }).join(", ") + " 데이터를 불러오는 중…";
 
       return Promise.all(picks.map(function (c) {
-        return getJSON(CFG.dataBase + encodeURIComponent(c.sido) + "/" + encodeURIComponent(c.sigungu) + ".json");
+        var key = c.sido + "/" + c.sigungu;
+        if (state.browseCache[key]) return Promise.resolve(state.browseCache[key]);
+        return getJSON(CFG.dataBase + encodeURIComponent(c.sido) + "/" +
+          encodeURIComponent(c.sigungu) + ".json").then(function (file) {
+          var rows = expand(file.p);
+          state.browseCache[key] = rows;
+          return rows;
+        });
       })).then(function (files) {
         var merged = [];
-        files.forEach(function (f) { merged = merged.concat(expand(f.p)); });
+        files.forEach(function (rows) { merged = merged.concat(rows); });
         merged.forEach(function (r) {
           r._km = distanceKm(state.origin[0], state.origin[1], r.la, r.lo);
         });
