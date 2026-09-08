@@ -472,6 +472,20 @@ NAVER_VERIFY = env("NAVER_SITE_VERIFICATION")
 # 도메인이 등록된 곳에서만 동작하므로 HTML 에 노출돼도 된다.
 KAKAO_JS_KEY = env("KAKAO_JS_KEY", "e4aea89052f4eee41ab344a66531fddd")
 
+# 구글 애널리틱스 4 측정 ID. 메인 도메인과 다른 속성이라 데이터가 섞이지 않는다.
+# 페이지 소스에 그대로 노출되는 공개 값이다.
+GA_ID = env("GA_MEASUREMENT_ID", "G-7R6BSLQN06")
+
+
+def analytics_tag():
+    """값이 비면 스크립트를 아예 넣지 않는다."""
+    if not GA_ID:
+        return ""
+    return ('<script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>'
+            "<script>window.dataLayer=window.dataLayer||[];"
+            "function gtag(){dataLayer.push(arguments);}"
+            'gtag("js",new Date());gtag("config","%s");</script>') % (e(GA_ID), e(GA_ID))
+
 
 def verification_tags():
     tags = []
@@ -505,6 +519,9 @@ PRIVACY_SECTIONS = [
         'rel="noopener">구글 광고 정책</a>을 따릅니다. 개인 맞춤 광고는 '
         '<a href="https://myadcenter.google.com" target="_blank" rel="noopener">'
         "구글 광고 설정</a>에서 해제할 수 있습니다.",
+        "또한 방문자 수와 어떤 지역이 많이 조회되는지 파악하기 위해 구글 애널리틱스를 "
+        "사용합니다. 방문 시각·페이지 주소·기기 종류·대략적인 지역 같은 통계 정보만 "
+        "수집하며, 이름이나 연락처 같은 개인 식별 정보는 수집하지 않습니다.",
         "브라우저 설정에서 쿠키를 차단할 수 있으며, 차단하더라도 주차장 정보 조회에는 "
         "지장이 없습니다.",
     ]),
@@ -592,7 +609,7 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
     for key, value in [
         ("{{TITLE}}", title), ("{{DESC}}", desc), ("{{CANONICAL}}", canonical),
         ("{{BODY}}", body), ("{{ROOT}}", root),
-        ("{{HEAD}}", adsense_head() + head), ("{{ROBOTS}}", robots),
+        ("{{HEAD}}", analytics_tag() + adsense_head() + head), ("{{ROBOTS}}", robots),
         ("{{VERIFY}}", verification_tags()),
         ("{{SCRIPTS}}", kakao_sdk() + scripts), ("{{UPDATED}}", TODAY),
     ]:

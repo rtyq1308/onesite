@@ -144,6 +144,7 @@
     if (!btn) return;
     btn.addEventListener("click", function () {
       state.onlyFree = !state.onlyFree;
+      track("filter_free", { on: state.onlyFree ? 1 : 0 });
       btn.setAttribute("aria-pressed", String(state.onlyFree));
       btn.textContent = state.onlyFree
         ? "전체 주차장 보기"
@@ -369,6 +370,7 @@
     initMap();
 
     btn.addEventListener("click", function () {
+      track("nearby_search");
       if (!navigator.geolocation) {
         el("#nearby-msg").textContent = "이 브라우저는 위치 확인을 지원하지 않습니다.";
         return;
@@ -439,6 +441,12 @@
   }
 
   /* ---------- 공유 ---------- */
+
+  /* 구글 애널리틱스 이벤트. GA 가 없거나 차단돼도 조용히 넘어간다. */
+  function track(name, params) {
+    if (typeof window.gtag !== "function") return;
+    try { window.gtag("event", name, params || {}); } catch (err) { /* 무시 */ }
+  }
 
   function toast(message) {
     var box = el("#toast");
@@ -515,6 +523,7 @@
 
     Array.prototype.forEach.call(buttons, function (btn) {
       btn.addEventListener("click", function () {
+        track("share", { method: btn.getAttribute("data-share") });
         var url = location.href;
         // 주소가 한글이라 location.href 는 %EC%84%9C... 로 인코딩돼 있다.
         // 사람이 보는 곳(복사·공유 시트)에는 디코딩한 주소를 넘겨야 카톡에서도 깔끔하다.
@@ -589,6 +598,20 @@
   }
 
   /* 지도 팝업의 "목록에서 보기" — 해당 카드로 스크롤하고 잠깐 강조한다. */
+  /* 어느 지도로 길찾기를 많이 쓰는지 본다. */
+  function bindRouteTracking() {
+    document.addEventListener("click", function (ev) {
+      var a = ev.target.closest && ev.target.closest("a.act");
+      if (!a) return;
+      var href = a.getAttribute("href") || "";
+      var provider = href.indexOf("kakao") > -1 ? "kakao"
+        : href.indexOf("naver") > -1 ? "naver"
+        : href.indexOf("google") > -1 ? "google"
+        : href.indexOf("tel:") === 0 ? "tel" : "other";
+      track("route", { provider: provider });
+    });
+  }
+
   function bindGoto() {
     document.addEventListener("click", function (ev) {
       var btn = ev.target.closest && ev.target.closest("[data-goto]");
@@ -676,7 +699,7 @@
         installPrompt = null;
         ev.prompt();
         ev.userChoice.then(function (res) {
-          if (res && res.outcome === "accepted") markInstalled();
+          if (res && res.outcome === "accepted") { markInstalled(); track("app_install"); }
           else promptDismissed = true;
         });
         return;
@@ -711,6 +734,7 @@
     bindShare();
     bindGoto();
     bindKakaoApp();
+    bindRouteTracking();
     bindFilter();
     bindInstall();
     registerSW();
