@@ -789,7 +789,7 @@ def build_home(index, total, total_slots, top_regions, free_total):
                       ("갱신일 · 매월 자동 갱신", TODAY)])
         + '<p class="cta"><button class="btn primary" id="nearby">내 주변 무료주차장 찾기</button>'
           '<button type="button" class="btn" data-share="quick">공유하기</button>'
-          '<button type="button" class="btn" id="install-app" hidden>홈 화면에 추가</button></p>'
+          '<button type="button" class="btn" id="install-app" hidden>앱 설치</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
         + '<div id="map"></div>'
         # 지역 페이지와 같은 이유로 공유를 목록 앞에 둔다.

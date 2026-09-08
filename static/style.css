@@ -116,6 +116,11 @@ h2 {
 
 .crumb { font-size: 13px; color: var(--muted); margin: 18px 0 4px; }
 
+/* .btn 이 display:inline-flex 를 걸기 때문에 hidden 속성만으로는 안 숨는다.
+   (작성자 스타일이 브라우저 기본 [hidden]{display:none} 보다 우선한다)
+   이게 없으면 설치 이벤트를 못 받은 PC 에서도 '앱 설치' 버튼이 그냥 보인다. */
+[hidden] { display: none !important; }
+
 /* ---------- 입체 버튼: 클릭해서 이동하는 모든 것 ---------- */
 
 .btn,
