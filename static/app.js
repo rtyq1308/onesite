@@ -847,7 +847,10 @@
         installPrompt = null;
         ev.prompt();
         ev.userChoice.then(function (res) {
-          if (res && res.outcome === "accepted") { markInstalled(); track("app_install"); }
+          if (res && res.outcome === "accepted") {
+            markInstalled();
+            track("app_install", { source: "prompt" });
+          }
           else promptDismissed = true;
         });
         return;
@@ -868,6 +871,7 @@
 
     window.addEventListener("appinstalled", function () {
       markInstalled();
+      track("app_install", { source: "appinstalled" });
       installPrompt = null;
     });
   }
@@ -878,7 +882,21 @@
     navigator.serviceWorker.register("/sw.js").catch(function () { });
   }
 
+  /* 이 방문이 설치된 앱에서 열린 것인지 기록한다.
+     설치 수(app_install)는 한 번뿐이지만, 이 값은 매 방문마다 남아서
+     "설치하고 실제로 쓰는지"를 볼 수 있다. */
+  function reportDisplayMode() {
+    var mode = isStandalone() ? "standalone" : "browser";
+    if (typeof window.gtag === "function") {
+      try {
+        window.gtag("set", "user_properties", { display_mode: mode });
+      } catch (err) { /* 무시 */ }
+    }
+    track("app_open", { display_mode: mode });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    reportDisplayMode();
     bindShare();
     bindGoto();
     bindKakaoApp();
