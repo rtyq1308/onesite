@@ -886,7 +886,8 @@
      설치 수(app_install)는 한 번뿐이지만, 이 값은 매 방문마다 남아서
      "설치하고 실제로 쓰는지"를 볼 수 있다. */
   function reportDisplayMode() {
-    var mode = isStandalone() ? "standalone" : "browser";
+    // 값은 보고서에 그대로 찍히므로 한글로 보낸다.
+    var mode = isStandalone() ? "앱" : "브라우저";
     if (typeof window.gtag === "function") {
       try {
         window.gtag("set", "user_properties", { display_mode: mode });
