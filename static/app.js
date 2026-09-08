@@ -510,6 +510,59 @@
     }
   }
 
+  /* ---------- 인앱 브라우저 ----------
+     스레드·인스타·페북·카톡 안에서 링크를 열면 웹뷰가 뜨는데, 여기서는
+     위치 권한 자체를 앱이 막아버려 사이트가 아무리 요청해도 실패한다.
+     페이지에서 권한을 살릴 방법은 없다. 밖의 브라우저로 나가는 길만 안내한다. */
+
+  function inAppBrowser() {
+    var ua = navigator.userAgent || "";
+    // Barcelona = 스레드 앱의 내부 이름
+    return /Barcelona|Instagram|FBAN|FBAV|KAKAOTALK|NAVER\(inapp|Line\/|DaumApps|everytimeApp/i.test(ua);
+  }
+
+  function isIOSDevice() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  }
+
+  /* 안드로이드는 intent 로 크롬을 직접 띄울 수 있다. iOS 에는 그런 통로가 없어
+     사파리로 나가는 메뉴 위치를 글로 알려주는 수밖에 없다. */
+  function escapeHint() {
+    if (isIOSDevice()) {
+      return "오른쪽 아래 나침반 모양(사파리) 아이콘, 또는 오른쪽 위 ··· 를 눌러 " +
+        "“Safari에서 열기”를 선택해주세요.";
+    }
+    return "오른쪽 위 점 3개(⋮)를 눌러 “다른 브라우저에서 열기”를 선택해주세요.";
+  }
+
+  function showEscapeGuide(reason) {
+    var box = el("#nearby-msg");
+    if (!box) return;
+    var html = "<b>" + esc(reason) + "</b><br>" +
+      "지금은 앱 안에서 열려 있어 위치 권한을 쓸 수 없습니다. " + esc(escapeHint());
+    if (!isIOSDevice()) {
+      // 크롬이 없으면 아무 일도 안 일어나므로 안내 문구는 그대로 둔다.
+      var url = "intent://" + location.host + location.pathname +
+        "#Intent;scheme=https;package=com.android.chrome;end";
+      html += '<br><a class="btn" style="margin-top:8px" href="' + esc(url) + '">크롬으로 열기</a>';
+    }
+    html += '<br><button type="button" class="btn" style="margin-top:8px" ' +
+      'id="escape-copy">주소 복사</button>';
+    box.innerHTML = html;
+    // bindShare() 를 다시 부르면 기존 버튼에 리스너가 겹쳐 붙는다. 여기만 직접 건다.
+    var copyBtn = el("#escape-copy");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", function () {
+        copyLink(decodeURI(location.href)).then(function () {
+          toast("주소를 복사했습니다. 브라우저에 붙여넣어 주세요");
+        }).catch(function () {
+          toast("복사에 실패했습니다. 주소창을 직접 복사해주세요");
+        });
+      });
+    }
+    track("inapp_block", { os: isIOSDevice() ? "ios" : "android" });
+  }
+
   function startHomePage() {
     var btn = el("#nearby");
     if (!btn) return;
@@ -519,7 +572,8 @@
     btn.addEventListener("click", function () {
       track("nearby_search");
       if (!navigator.geolocation) {
-        el("#nearby-msg").textContent = "이 브라우저는 위치 확인을 지원하지 않습니다.";
+        if (inAppBrowser()) showEscapeGuide("위치 확인을 쓸 수 없습니다.");
+        else el("#nearby-msg").textContent = "이 브라우저는 위치 확인을 지원하지 않습니다.";
         return;
       }
       btn.disabled = true;
@@ -530,7 +584,12 @@
       }, function () {
         btn.disabled = false;
         btn.textContent = "내 주변 찾기";
-        el("#nearby-msg").textContent = "위치 권한이 거부되었습니다. 아래에서 지역을 직접 골라주세요.";
+        if (inAppBrowser()) {
+          showEscapeGuide("위치를 가져오지 못했습니다.");
+        } else {
+          el("#nearby-msg").textContent =
+            "위치 권한이 거부되었습니다. 아래에서 지역을 직접 골라주세요.";
+        }
       }, { enableHighAccuracy: true, timeout: 10000 });
     });
   }
