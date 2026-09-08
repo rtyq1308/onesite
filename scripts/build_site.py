@@ -560,13 +560,19 @@ def build_privacy_page():
            SITE_URL + "/privacy/", body, "../")
 
 
+def listbar_block(hidden=False):
+    """무료만 보기 필터. 목록 바로 위가 아니라 지도 바로 아래에 둔다.
+    공유 상자와 광고를 지나 한참 스크롤해야 나오면 아무도 못 누른다."""
+    return ('<div class="listbar" id="listbar"%s>' % (" hidden" if hidden else "")
+            + '<button type="button" class="btn" id="only-free" aria-pressed="false">'
+              '가까운 무료 주차장 우선으로 확인하기</button>'
+              '<span class="note" id="list-count"></span>'
+              "</div>")
+
+
 def list_block():
-    return ('<div class="listbar">'
-            '<button type="button" class="btn" id="only-free" aria-pressed="false">'
-            '가까운 무료 주차장 우선으로 확인하기</button>'
-            '<span class="note" id="list-count"></span>'
-            "</div>"
-            '<div id="list" class="list"></div><p id="more" class="note"></p>')
+    return '<div id="list" class="list"></div><p id="more" class="note"></p>'
+
 
 
 def stat_block(pairs):
@@ -683,6 +689,7 @@ def build_region_page(sido, sigungu, rows, siblings):
             + ([("유료", "%d곳" % len(paid))] if paid else [])
             + [("전체 주차면", format(total_slots, ",") + "면")])
         + '<div id="map"></div>'
+        + listbar_block()
         # 공유는 목록 앞에 둔다. 목록이 수백 장까지 늘어나기 때문에 뒤에 두면
         # 화면상 만 픽셀 아래로 밀려 아무도 못 본다.
         + share_bar("%s %s 주차장 요금 지도, 필요한 사람에게 보내주세요" % (sido, sigungu))
@@ -792,6 +799,7 @@ def build_home(index, total, total_slots, top_regions, free_total):
           '<button type="button" class="btn" id="install-app" hidden>앱 설치</button></p>'
         + '<p class="note" id="nearby-msg"></p>'
         + '<div id="map"></div>'
+        + listbar_block(hidden=True)
         # 지역 페이지와 같은 이유로 공유를 목록 앞에 둔다.
         + share_bar("전국 주차장 요금 지도, 필요한 사람에게 보내주세요")
         + '<div id="nearby-result" hidden>%s</div>' % list_block()

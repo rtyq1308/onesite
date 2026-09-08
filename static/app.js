@@ -416,6 +416,8 @@
         state.all = merged.slice(0, 300);
 
         el("#nearby-result").hidden = false;
+        var bar = el("#listbar");
+        if (bar) bar.hidden = false;   // 홈에서는 찾기 전까지 감춰둔다
         applyFilter();
         var freeCount = state.all.filter(function (r) { return r.fr; }).length;
         msg.textContent = picks[0].sido + " " + picks[0].sigungu + " 부근 " +
