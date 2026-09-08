@@ -491,6 +491,24 @@ main.wrap code {
 .btn.kakao:hover,
 .act.kakao:hover { border-color: #c9b400; filter: brightness(1.03); }
 
+/* 인스타그램 브랜드 그라데이션 */
+.btn.instagram {
+  background: linear-gradient(135deg, #f9a03f, #e1306c 45%, #c13584);
+  border-color: #a92b6e;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .2), inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.btn.instagram:hover { border-color: #8e2464; filter: brightness(1.05); }
+
+/* 페이스북 브랜드 파랑 */
+.btn.facebook {
+  background: linear-gradient(#3b87f5, #1877f2);
+  border-color: #1461c9;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .2), inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.btn.facebook:hover { border-color: #0f4fa3; filter: brightness(1.05); }
+
 /* 지도 팝업은 Leaflet 기본값이 항상 흰색이라 다크모드에서 글자가 묻힌다. */
 @media (prefers-color-scheme: dark) {
   .leaflet-popup-content-wrapper,

@@ -570,6 +570,19 @@
           case "facebook":
             openPopup("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url));
             break;
+          case "instagram":
+            // 인스타그램은 외부 링크를 바로 올리는 공개 주소가 없다.
+            // 주소를 복사해두고 앱(없으면 웹)을 열어 붙여넣게 한다.
+            copyLink(prettyUrl).then(function () {
+              toast("주소를 복사했습니다. 인스타그램에 붙여넣어 주세요");
+            }).catch(function () {
+              toast("인스타그램을 엽니다. 주소창의 주소를 복사해 붙여넣어 주세요");
+            }).then(function () {
+              setTimeout(function () {
+                window.open("https://www.instagram.com/", "_blank", "noopener");
+              }, 900);
+            });
+            break;
         }
       });
     });

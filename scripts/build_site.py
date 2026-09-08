@@ -392,15 +392,18 @@ def share_bar(prompt):
     buttons = [
         # SDK 가 준비돼야 동작하므로 JS 가 켤 때까지 숨겨둔다
         ("kakao", "카카오톡 공유", " hidden"),
+        ("instagram", "인스타그램 공유", ""),
         ("native", "공유하기", " hidden"),   # navigator.share 가 있을 때만 JS가 켠다
         ("copy", "주소 복사", ""),
         ("naver", "네이버 블로그", ""),
         ("x", "X", ""),
-        ("facebook", "페이스북", ""),
+        ("facebook", "페이스북 공유", ""),
     ]
+    # 브랜드 색을 쓰는 버튼은 같은 이름의 클래스를 함께 준다.
+    branded = {"kakao", "instagram", "facebook"}
     tags = "".join(
         '<button type="button" class="btn%s" data-share="%s"%s>%s</button>'
-        % (" kakao" if key == "kakao" else "", key, extra, label)
+        % ((" " + key) if key in branded else "", key, extra, label)
         for key, label, extra in buttons
     )
     return ('<section class="share"><p class="share-label">%s</p>'
