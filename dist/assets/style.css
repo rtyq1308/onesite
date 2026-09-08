@@ -255,6 +255,11 @@ footer.site a {
   z-index: 1;
 }
 
+/* 팝업이 열리면 +/- 버튼이 상세 내용을 가린다. 흐리게 비켜준다.
+   마우스를 올리면 다시 진해져서 확대·축소는 그대로 쓸 수 있다. */
+#map.popup-open .leaflet-control-zoom { opacity: .25; transition: opacity .15s ease; }
+#map.popup-open .leaflet-control-zoom:hover { opacity: 1; }
+
 .leaflet-popup-content-wrapper { border-radius: 12px; }
 .leaflet-popup-content { margin: 13px 15px; }
 .pop { display: flex; flex-direction: column; gap: 3px; }

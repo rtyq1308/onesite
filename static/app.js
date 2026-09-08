@@ -8,7 +8,7 @@
               origin: null, adPlaced: false, onlyFree: false,
               // 홈 첫 화면 둘러보기 모드
               browse: false, clusters: null, clustersWide: null, clusterLayer: null,
-              browseCache: {}, browseLoading: false };
+              browseCache: {}, browseLoading: false, popupOpen: false };
 
   /* ---------- 유틸 ---------- */
 
@@ -349,12 +349,28 @@
 
     // 확대하면 가려졌던 곳이 하나씩 드러난다.
     var drawTimer;
-    state.map.on("moveend zoomend", function () {
+    function redraw() {
       clearTimeout(drawTimer);
       drawTimer = setTimeout(function () {
+        // 다시 그리면 마커를 통째로 갈아끼우기 때문에 열려 있던 팝업이 닫힌다.
+        // 팝업이 열릴 때 지도가 살짝 움직이면(autoPan) moveend 가 따라 들어와
+        // 방금 연 팝업이 바로 사라진다. 그래서 열려 있는 동안은 미뤄둔다.
+        if (state.popupOpen) return;
         if (state.browse) refreshBrowse();
         else renderMarkers();
       }, 120);
+    }
+
+    state.map.on("moveend zoomend", redraw);
+    // 팝업이 열린 동안에는 +/- 확대 버튼을 흐리게 해서 상세 내용을 가리지 않게 한다.
+    state.map.on("popupopen", function () {
+      state.popupOpen = true;
+      node.classList.add("popup-open");
+    });
+    state.map.on("popupclose", function () {
+      state.popupOpen = false;
+      node.classList.remove("popup-open");
+      redraw();   // 닫힌 뒤에 미뤄둔 갱신을 한 번 돌려준다
     });
   }
 
