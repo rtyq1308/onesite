@@ -5,7 +5,10 @@
 
   var CFG = window.FREEMAP || {};
   var state = { all: [], rows: [], map: null, layer: null,
-              origin: null, adPlaced: false, onlyFree: false };
+              origin: null, adPlaced: false, onlyFree: false,
+              // 홈 첫 화면 둘러보기 모드
+              browse: false, clusters: null, clustersWide: null, clusterLayer: null,
+              browseCache: {}, browseLoading: false };
 
   /* ---------- 유틸 ---------- */
 
@@ -348,7 +351,10 @@
     var drawTimer;
     state.map.on("moveend zoomend", function () {
       clearTimeout(drawTimer);
-      drawTimer = setTimeout(renderMarkers, 120);
+      drawTimer = setTimeout(function () {
+        if (state.browse) refreshBrowse();
+        else renderMarkers();
+      }, 120);
     });
   }
 
@@ -364,10 +370,135 @@
     });
   }
 
+  /* ---------- 홈 첫 화면: 전국 둘러보기 ----------
+     '내 주변 찾기'를 누르기 전에도 지도가 비어 있지 않게 한다.
+     넓게 보면 시군구별 개수 풍선, 확대하면 그 지역 파일만 받아 낱개로 보여준다.
+     18,843곳을 한 번에 받으면 몇 MB라 처음부터 다 내려받지는 않는다. */
+
+  var WIDE_ZOOM = 9;         // 이 미만에서는 시도 단위로 묶는다
+  var DETAIL_ZOOM = 11;      // 이 이상 확대하면 낱개 마커로 바꾼다
+  var BROWSE_MAX_FILES = 8;  // 한 화면에서 받아올 지역 파일 수 상한
+
+  function startBrowse() {
+    state.browse = true;
+    getJSON(CFG.indexUrl).then(function (index) {
+      var cells = [], wide = [];
+      index.sido.forEach(function (sido) {
+        var sum = 0, free = 0, la = 0, lo = 0, w = 0;
+        sido.sgg.forEach(function (sgg) {
+          if (!sgg.c) return;
+          cells.push({ sido: sido.nm, nm: sgg.nm, c: sgg.c, p: sgg.p, f: sgg.f || 0 });
+          sum += sgg.p; free += sgg.f || 0;
+          la += sgg.c[0] * sgg.p; lo += sgg.c[1] * sgg.p; w += sgg.p;
+        });
+        // 시도 풍선 자리는 주차장 수로 가중평균한 중심. 시청 위치보다
+        // 실제로 주차장이 몰린 쪽에 붙는다.
+        if (w) wide.push({ sido: sido.nm, nm: sido.nm, p: sum, f: free, c: [la / w, lo / w] });
+      });
+      state.clusters = cells;
+      state.clustersWide = wide;
+      refreshBrowse();
+    }).catch(function () { /* 지도는 비어도 나머지 기능은 살아 있다 */ });
+  }
+
+  function clearClusters() {
+    if (state.clusterLayer) {
+      state.map.removeLayer(state.clusterLayer);
+      state.clusterLayer = null;
+    }
+  }
+
+  function stopBrowse() {
+    state.browse = false;
+    clearClusters();
+    state.browseCache = {};
+  }
+
+  function drawClusters() {
+    if (!state.clusters) return;
+    clearClusters();
+    var zoom = state.map.getZoom();
+    // 전국을 다 보는 배율에서 시군구 220개를 뿌리면 서로 겹쳐 못 읽는다.
+    var cells = zoom < WIDE_ZOOM ? (state.clustersWide || []) : state.clusters;
+    var bounds = state.map.getBounds().pad(0.1);
+    var marks = [];
+    cells.forEach(function (c) {
+      if (!bounds.contains(c.c)) return;
+      var n = c.f || c.p;
+      // 자릿수가 늘면 원이 아니라 알약 모양으로 늘어난다(CSS min-width).
+      var icon = L.divIcon({
+        className: "cluster" + (c.f ? "" : " cluster-pay") + (n >= 100 ? " cluster-lg" : ""),
+        html: "<span>" + n.toLocaleString() + "</span>",
+        iconSize: null
+      });
+      marks.push(
+        L.marker(c.c, { icon: icon, riseOnHover: true })
+          .bindTooltip(c.nm + " · 무료 " + c.f.toLocaleString() + "곳 / 전체 " + c.p.toLocaleString() + "곳")
+          .on("click", function () {
+            var to = state.map.getZoom() < WIDE_ZOOM ? WIDE_ZOOM + 1 : DETAIL_ZOOM + 1;
+            state.map.setView(c.c, to, { animate: false });
+          })
+      );
+    });
+    state.clusterLayer = L.layerGroup(marks).addTo(state.map);
+  }
+
+  /* 화면 안 시군구 파일만 받아 낱개 마커로 보여준다. */
+  function loadDetail() {
+    if (!state.clusters || state.browseLoading) return;
+    // 화면 안에 '중심점'이 든 시군구만 고르면, 많이 확대했을 때 화면이
+    // 시군구 하나보다 작아져 아무것도 안 잡힌다. 화면 중심에서 가까운 순으로 고른다.
+    var centre = state.map.getCenter();
+    var near = state.clusters.map(function (c) {
+      return { c: c, km: distanceKm(centre.lat, centre.lng, c.c[0], c.c[1]) };
+    }).filter(function (x) { return x.km < 80; });
+    near.sort(function (a, b) { return a.km - b.km; });
+    near = near.slice(0, BROWSE_MAX_FILES).map(function (x) { return x.c; });
+
+    var missing = near.filter(function (c) {
+      return !state.browseCache[c.sido + "/" + c.nm];
+    });
+
+    function paint() {
+      var rows = [];
+      near.forEach(function (c) {
+        var got = state.browseCache[c.sido + "/" + c.nm];
+        if (got) rows = rows.concat(got);
+      });
+      state.rows = rows;
+      renderMarkers();
+    }
+
+    if (!missing.length) { paint(); return; }
+
+    state.browseLoading = true;
+    Promise.all(missing.map(function (c) {
+      return getJSON(CFG.dataBase + encodeURIComponent(c.sido) + "/" + encodeURIComponent(c.nm) + ".json")
+        .then(function (file) { state.browseCache[c.sido + "/" + c.nm] = expand(file.p); })
+        .catch(function () { state.browseCache[c.sido + "/" + c.nm] = []; });
+    })).then(function () {
+      state.browseLoading = false;
+      paint();
+    });
+  }
+
+  function refreshBrowse() {
+    if (!state.map || !state.clusters) return;
+    if (state.map.getZoom() >= DETAIL_ZOOM) {
+      clearClusters();
+      loadDetail();
+    } else {
+      state.rows = [];
+      renderMarkers();
+      drawClusters();
+    }
+  }
+
   function startHomePage() {
     var btn = el("#nearby");
     if (!btn) return;
     initMap();
+    startBrowse();
 
     btn.addEventListener("click", function () {
       track("nearby_search");
@@ -417,6 +548,7 @@
         merged.sort(function (a, b) { return a._km - b._km; });
         state.all = merged.slice(0, 300);
 
+        stopBrowse();   // 내 주변 결과로 전환한다
         el("#nearby-result").hidden = false;
         var bar = el("#listbar");
         if (bar) bar.hidden = false;   // 홈에서는 찾기 전까지 감춰둔다

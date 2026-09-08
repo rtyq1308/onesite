@@ -1087,7 +1087,11 @@ def main():
                 ))
             centre = [round(statistics.median(r["la"] for r in bucket), 5),
                       round(statistics.median(r["lo"] for r in bucket), 5)]
-            sido_entry["sgg"].append({"nm": sigungu, "p": len(bucket), "c": centre})
+            # f: 상시 무료 수. 홈 지도의 묶음 풍선에 쓴다.
+            sido_entry["sgg"].append({
+                "nm": sigungu, "p": len(bucket),
+                "f": sum(1 for r in bucket if r["fr"]), "c": centre,
+            })
 
         build_sido_page(sido, siblings, sido_total)
         sido_url = "%s/%s/" % (SITE_URL, sido)

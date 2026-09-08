@@ -447,6 +447,33 @@ main.wrap code {
   box-shadow: 0 1px 4px rgba(0, 0, 0, .35);
 }
 .pin-partly span { background: #c2820a; }
+
+/* 홈 첫 화면의 지역별 묶음 풍선. 확대하면 낱개 마커로 바뀐다. */
+.cluster span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(26, 122, 92, .82);
+  border: 3px solid rgba(255, 255, 255, .85);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: -0.02em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+  cursor: pointer;
+}
+.cluster-lg span { min-width: 44px; height: 44px; font-size: 14px; }
+.cluster:hover span { filter: brightness(1.1); }
+/* 무료가 한 곳도 없는 지역은 유료 색으로 */
+.cluster-pay span { background: rgba(47, 95, 184, .82); }
 .pin:hover span { filter: brightness(1.12); }
 
 /* Leaflet 이 .leaflet-container a { color:#0078A8 } 을 걸어두기 때문에
