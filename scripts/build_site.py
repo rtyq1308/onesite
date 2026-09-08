@@ -413,6 +413,12 @@ def share_bar(prompt):
 # 실제 자동완성에 뜨는 연관 검색어(무료주차장 찾기 / 어플 / 찾는법 / 장기주차 /
 # 사이트 / 사고 책임)를 그대로 질문으로 받아 답한다. FAQPage 스키마로도 내보낸다.
 FAQ = [
+    # 브랜드명으로 검색해서 들어온 사람에게 이 사이트가 맞는지 바로 확인시켜 준다.
+    ("공짜맵은 어떤 사이트인가요?",
+     "공짜맵은 전국 주차장 18,000여 곳의 무료 여부와 주차요금을 지도 한 장에서 "
+     "비교하는 무료주차장 지도 사이트입니다. 공짜로 댈 수 있는 곳은 “무료”로, "
+     "돈을 내야 하는 곳은 30분 요금으로 표시합니다. 회원가입도, 앱 설치도 "
+     "필요 없이 웹에서 바로 열립니다."),
     ("무료주차장 찾는 법이 있나요?",
      "위 “내 주변 무료주차장 찾기” 버튼을 누르면 현재 위치에서 가까운 무료 주차장을 "
      "가까운 순서로 보여줍니다. 위치 권한을 주기 싫다면 시·도와 시군구를 눌러 "
@@ -801,7 +807,8 @@ def build_home(index, total, total_slots, top_regions, free_total):
     )
 
     count_text = format(total, ",")
-    title = "전국 무료주차장·주차요금 지도 | 주차장 %s곳 - %s" % (count_text, SITE_NAME)
+    # 브랜드명('공짜맵')으로 검색했을 때 잡히도록 제목 맨 앞에 둔다.
+    title = "%s - 전국 무료주차장·주차요금 지도 | 주차장 %s곳" % (SITE_NAME, count_text)
     desc = ("전국 주차장 %s곳을 지도 한 장에. 무료주차장은 무료로, 유료는 30분 요금으로 "
             "표시해 바로 비교됩니다. 내 위치에서 가까운 순으로 찾고 길찾기까지 하세요."
             % count_text)
@@ -826,6 +833,12 @@ def build_home(index, total, total_slots, top_regions, free_total):
            if top_links else "")
         + ad_unit("bottom")
         + faq_html()
+        + "<h2>공짜맵 소개</h2>"
+        + '<p class="note">공짜맵은 전국 주차장의 무료 여부와 주차요금을 지도에서 '
+          "바로 비교하는 무료주차장 지도입니다. 공영·노상·노외·부설 주차장을 모두 모아 "
+          "상시 무료인 곳은 “무료”로, 요금을 받는 곳은 30분 기준 요금으로 표시합니다. "
+          "회원가입과 앱 설치 없이 열리고, 휴대폰에서는 “앱 설치 바로가기”로 "
+          "홈 화면에 추가해 앱처럼 쓸 수 있습니다.</p>"
         + "<h2>무료 주차장 정보는 어디서 왔나요</h2>"
         + '<p class="note">행정안전부가 공공데이터포털에 개방한 「전국주차장정보표준데이터」에서 '
           "요금이 무료로 등록된 주차장만 추려 매달 자동으로 갱신합니다. 노상·노외·부설 주차장이 "
@@ -840,10 +853,17 @@ def build_home(index, total, total_slots, top_regions, free_total):
     site_ld = {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "%s - 전국 무료주차장 지도" % SITE_NAME,
+        "name": SITE_NAME,
+        "alternateName": ["공짜맵", "공짜 맵", "무료주차장 지도"],
         "url": SITE_URL + "/",
         "description": desc,
         "inLanguage": "ko-KR",
+        "publisher": {
+            "@type": "Organization",
+            "name": SITE_NAME,
+            "url": SITE_URL + "/",
+            "logo": {"@type": "ImageObject", "url": SITE_URL + "/icon-512.png"},
+        },
     }
     dataset_ld = {
         "@context": "https://schema.org",
