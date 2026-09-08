@@ -266,9 +266,9 @@ footer.site a {
 .destination-option span { color: var(--muted); font-size: 13px; }
 .destination-option:hover { background: var(--accent-soft); }
 .map-unavailable { padding: 35px 24px; color: var(--muted); line-height: 1.8; }
-/* 지도가 낮은 화면에서는 팝업이 지도보다 커질 수 있다. 잘려서 안 보이느니
-   팝업 안에서 스크롤되게 한다. 자동 이동(autoPan)과 함께 쓰인다. */
-.naver-popup { position: relative; padding: 20px 16px 16px; width: 270px; max-width: 75vw; max-height: 70vh; overflow-y: auto; border-radius: 12px; background: var(--card); color: var(--text); box-shadow: 0 4px 20px #0003; }
+/* 높이를 제한하면 잘려서 오히려 안 보인다. 화면에 다 담는 일은
+   InfoWindow 의 자동 이동(autoPan)에 맡긴다. */
+.naver-popup { position: relative; padding: 20px 16px 16px; width: 270px; max-width: 75vw; border-radius: 12px; background: var(--card); color: var(--text); box-shadow: 0 4px 20px #0003; }
 .popup-close { position: absolute; right: 2px; top: 0; border: 0; background: transparent; font-size: 24px; cursor: pointer; color: var(--text); }
 button.pin, button.cluster { border: 0; padding: 0; background: transparent; font: inherit; cursor: pointer; }
 button.pin span, button.cluster span { position: static; transform: none; }
