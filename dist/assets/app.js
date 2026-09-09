@@ -517,6 +517,29 @@
   /* 안드로이드는 intent 로 크롬을 직접 띄울 수 있으니 버튼 하나로 끝낸다.
      iOS 에는 그런 통로가 없어 사파리로 나가는 메뉴 위치를 글로 알려주고
      주소 복사를 남겨둔다. */
+  /* 인앱 브라우저에서 밖의 브라우저로 내보낸다.
+     안드로이드는 intent 로 크롬이 바로 뜬다.
+     iOS 에는 공식 통로가 없어 x-safari-https 를 시도해보고, 아무 일도
+     일어나지 않으면(메타 계열 앱은 대부분 막아둔다) 안내로 떨어진다. */
+  function openInBrowser(reason, detail) {
+    var target = location.host + location.pathname + location.search;
+    track("inapp_escape", { os: isIOSDevice() ? "ios" : "android" });
+
+    // 안내 예약을 먼저 건다. 스킴 이동이 예외를 던지는 브라우저가 있는데,
+    // 나중에 걸면 그 자리에서 멈춰 아무 안내도 못 띄운다.
+    var wait = isIOSDevice() ? 800 : 1500;
+    setTimeout(function () {
+      if (!document.hidden) showEscapeGuide(reason, detail);
+    }, wait);
+
+    var url = isIOSDevice()
+      ? "x-safari-https://" + target
+      : "intent://" + target + "#Intent;scheme=https;package=com.android.chrome;end";
+    try {
+      window.location.href = url;
+    } catch (err) { /* 막힌 웹뷰. 위 안내로 떨어진다 */ }
+  }
+
   function showEscapeGuide(reason, detail) {
     var box = el("#nearby-msg");
     if (!box) return;
@@ -575,48 +598,30 @@
 
     btn.addEventListener("click", function () {
       track("nearby_search");
+      // 인앱 브라우저는 위치 권한이 막혀 있다. 기다렸다 실패시키지 말고
+      // 곧바로 밖의 브라우저로 내보낸다.
+      if (inAppBrowser()) {
+        state.escapeShown = false;
+        openInBrowser("앱 안에서는 위치를 쓸 수 없습니다.",
+          "스레드·인스타그램 같은 앱 안에서는 위치 권한이 막혀 있습니다.");
+        return;
+      }
       if (!navigator.geolocation) {
-        if (inAppBrowser()) showEscapeGuide("위치 확인을 쓸 수 없습니다.");
-        else el("#nearby-msg").textContent = "이 브라우저는 위치 확인을 지원하지 않습니다.";
+        el("#nearby-msg").textContent = "이 브라우저는 위치 확인을 지원하지 않습니다.";
         return;
       }
       btn.disabled = true;
       btn.textContent = "위치 확인 중…";
 
-      // 인앱 브라우저는 권한이 막혀 있어도 실패를 늦게 알려준다. 7~8초를
-      // 기다리게 두면 그 사이에 나가버리므로, 2초만 보고 먼저 안내를 띄운다.
-      // 늦게라도 위치가 오면 그때 결과로 덮어쓴다.
-      var settled = false;
-      state.escapeShown = false;
-      var watchdog = inAppBrowser() ? setTimeout(function () {
-        if (settled) return;
-        btn.disabled = false;
-        btn.textContent = "내 주변 찾기";
-        showEscapeGuide("앱 안에서는 위치를 쓸 수 없습니다.",
-          "스레드·인스타그램 같은 앱 안에서는 위치 권한이 막혀 있습니다.");
-      }, 2000) : null;
-
+      // 여기까지 왔으면 인앱이 아니다. 일반 브라우저는 응답이 빠르다.
       navigator.geolocation.getCurrentPosition(function (pos) {
-        settled = true;
-        clearTimeout(watchdog);
-        btn.disabled = true;
-        btn.textContent = "위치 확인 중…";
         state.origin = [pos.coords.latitude, pos.coords.longitude];
         loadNearby();
       }, function () {
-        settled = true;
-        clearTimeout(watchdog);
         btn.disabled = false;
         btn.textContent = "내 주변 찾기";
-        if (inAppBrowser()) {
-          // 감시 타이머가 이미 같은 안내를 띄웠다면 그대로 둔다.
-          // 몇 초 뒤에 문구가 바뀌면 읽던 사람이 헷갈린다.
-          if (!state.escapeShown) showEscapeGuide("앱 안에서는 위치를 쓸 수 없습니다.",
-            "스레드·인스타그램 같은 앱 안에서는 위치 권한이 막혀 있습니다.");
-        } else {
-          el("#nearby-msg").textContent =
-            "위치 권한이 거부되었습니다. 아래에서 지역을 직접 골라주세요.";
-        }
+        el("#nearby-msg").textContent =
+          "위치 권한이 거부되었습니다. 아래에서 지역을 직접 골라주세요.";
       }, {
         // GPS 고정밀(enableHighAccuracy)은 위성을 잡느라 7~8초씩 걸린다.
         // 가까운 주차장을 고르는 데는 와이파이·기지국 기반 수백 m 정확도면 충분하다.
@@ -1058,7 +1063,8 @@
       }
       if (inAppBrowser()) {
         // 웹뷰에는 설치 기능 자체가 없다. 브라우저로 나가야 설치가 뜬다.
-        showEscapeGuide("앱 안에서는 설치할 수 없습니다.",
+        state.escapeShown = false;
+        openInBrowser("앱 안에서는 설치할 수 없습니다.",
           "스레드·인스타그램 같은 앱 안에서는 설치 기능이 동작하지 않습니다.");
         return;
       }
