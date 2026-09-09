@@ -755,13 +755,12 @@ def build_region_page(sido, sigungu, rows, siblings):
             + [("전체 주차면", format(total_slots, ",") + "면")])
         + destination_search()
         + '<div id="map" role="region" aria-label="주차장 지도"></div>'
+        + ad_unit("top", rich)
         + listbar_block()
         # 공유는 목록 앞에 둔다. 목록이 수백 장까지 늘어나기 때문에 뒤에 두면
         # 화면상 만 픽셀 아래로 밀려 아무도 못 본다.
         + share_bar("%s %s 주차장 요금 지도, 필요한 사람에게 보내주세요" % (sido, sigungu))
-        + ad_unit("top", rich)
         + list_block()
-        + ad_unit("bottom", rich)
         + ("<h2>%s의 다른 지역</h2><div class=\"grid\">%s</div>" % (e(sido), nearby) if nearby else "")
         + "<h2>이용 전에 확인하세요</h2>"
         + ('<p class="note"><b>“토요일 무료”, “공휴일 무료”로 표시된 곳은 그 날에만 '
@@ -863,11 +862,11 @@ def build_home(index, total, total_slots, top_regions, free_total):
         + '<p class="note" id="nearby-msg"></p>'
         + destination_search()
         + '<div id="map" role="region" aria-label="주차장 지도"></div>'
+        + ad_unit("top")
         + listbar_block(hidden=True)
         # 지역 페이지와 같은 이유로 공유를 목록 앞에 둔다.
         + share_bar("전국 주차장 요금 지도, 필요한 사람에게 보내주세요")
         + '<div id="nearby-result" hidden>%s</div>' % list_block()
-        + ad_unit("top")
         + "<h2>시·도별 무료주차장</h2>"
         + '<div class="grid">%s</div>' % grid
         + ("<h2>무료주차장이 많은 지역</h2><div class=\"grid\">%s</div>" % top_links
