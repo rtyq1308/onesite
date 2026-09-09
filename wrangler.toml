@@ -1,0 +1,12 @@
+# Cloudflare Pages 배포 설정.
+#
+# dist/ 는 이미 완성된 상태로 저장소에 커밋되어 있어서 빌드 단계가 없다.
+# pages_build_output_dir 이 없으면 Pages 가 저장소 루트를 통째로 올려버려서
+# /index.html 을 못 찾고 404 가 난다. 이 한 줄이 핵심이다.
+#
+# dist/_headers 의 캐시 설정과 /경기도/포천시/ 같은 디렉터리 주소 처리는
+# Pages 가 기본으로 해준다.
+
+name = "onesite-1mf"
+compatibility_date = "2026-09-08"
+pages_build_output_dir = "dist"
