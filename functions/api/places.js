@@ -20,7 +20,7 @@ export async function onRequestGet({ request, env }) {
         'X-NCP-APIGW-API-KEY': env.NAVER_SEARCH_CLIENT_SECRET },
       signal: AbortSignal.timeout(6000)
     });
-    if (!result.ok) return reply({ error: 'search_unavailable' }, 502);
+    if (!result.ok) return reply({ error: 'search_unavailable', code: 'upstream_rejected', upstreamStatus: result.status }, 502);
     const data = await result.json();
     const items = (data.items || []).slice(0, 5).map(item => ({
       name: String(item.title || '').replace(/<[^>]*>/g, ''),
@@ -30,6 +30,6 @@ export async function onRequestGet({ request, env }) {
       item.lat >= 33 && item.lat <= 39.5 && item.lng >= 124 && item.lng <= 132);
     return reply({ items });
   } catch (_) {
-    return reply({ error: 'search_unavailable' }, 502);
+    return reply({ error: 'search_unavailable', code: 'upstream_failure' }, 502);
   }
 }
