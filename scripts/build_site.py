@@ -676,6 +676,7 @@ def map_workspace(body):
           '<p id="nearby-msg" class="note" role="status"></p></section>'
           '<section class="map-canvas" aria-label="지도 탐색">'
           '<div id="map" role="region" aria-label="주차장 지도"></div>'
+          '<div class="map-zoom" aria-label="지도 확대 축소"><button id="zoom-in" aria-label="지도 확대">+</button><button id="zoom-out" aria-label="지도 축소">−</button></div>'
           '<button class="btn map-research" id="map-research">이 지도 중심에서 찾기</button>'
           '<div class="map-legend"><span>● 무료</span><span>● 요일별 무료</span><span>● 유료</span></div>'
           '</section><section class="map-results" aria-label="주차장 목록">'
@@ -685,8 +686,9 @@ def map_workspace(body):
           '<h2>주차할 곳, 한눈에</h2></div><span id="list-count" role="status"></span></div>'
           '<div id="results-scroll" class="results-scroll">'
           '<p class="results-context" id="results-context">지도를 확대하거나 목적지를 검색해 주세요.</p>'
-          + ''.join(ads) + list_block()
+          + list_block()
           + '<p class="results-disclaimer">요금·운영시간은 방문 전 현장에서 확인하세요.</p></div></section>'
+          '<dialog id="spot-detail" aria-label="주차장 상세 정보"></dialog>'
           '<dialog id="map-menu" aria-labelledby="menu-title"><div class="menu-heading">'
           '<h2 id="menu-title">지역 탐색 · 이용 안내</h2><button class="btn" id="menu-close">닫기 ✕</button></div>'
           '<button class="btn" id="install-app" hidden>앱 설치 바로가기</button>'

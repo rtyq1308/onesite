@@ -279,6 +279,8 @@
 
   function closePopup() {
     if (state.infoWindow) state.infoWindow.close();
+    var detail = el("#spot-detail");
+    if (detail && detail.open) detail.close();
     state.popupOpen = false;
   }
 
@@ -304,6 +306,13 @@
       });
       naver.maps.Event.addListener(marker, "click", function () {
         closePopup();
+        var detail = el("#spot-detail");
+        if (detail && window.matchMedia && window.matchMedia("(max-width:760px)").matches) {
+          detail.innerHTML = '<button class="popup-close" aria-label="상세 닫기" type="button">×</button>' + popupHTML(r, item.idx);
+          state.popupOpen = true;
+          detail.showModal();
+          return;
+        }
         state.infoWindow = new naver.maps.InfoWindow({
           content: '<div class="naver-popup"><button class="popup-close" aria-label="상세 닫기" type="button">×</button>' + popupHTML(r, item.idx) + '</div>',
           // 화면 가장자리에서 열리면 지도를 밀어 상세 내용이 다 보이게 한다.
@@ -352,7 +361,7 @@
     }
     state.map = new naver.maps.Map(node, {
       center: new naver.maps.LatLng(36.5, 127.8), zoom: 7,
-      minZoom: 6, maxZoom: 19, zoomControl: true,
+      minZoom: 6, maxZoom: 19, zoomControl: false,
       zoomControlOptions: { position: naver.maps.Position.BOTTOM_RIGHT }
     });
     naver.maps.Event.addListener(state.map, "idle", function () {
@@ -503,6 +512,7 @@
     } else {
       state.all = [];
       applyFilter(true);
+      if (el("#list-count")) el("#list-count").textContent = "전국 탐색";
       if (el("#list")) el("#list").innerHTML = '<p class="empty">지역의 숫자를 누르면<br>주차장 위치와 요금이 나타납니다.</p>';
       setResultsContext("목적지를 검색하거나 지도를 확대해 보세요.");
       drawClusters();
@@ -997,6 +1007,9 @@
   function bindMapWorkspace() {
     var menu = el("#map-menu");
     if (!menu) return;
+    el("#zoom-in").addEventListener("click", function () { if (state.map) state.map.setZoom(Math.min(19, state.map.getZoom() + 1)); });
+    el("#zoom-out").addEventListener("click", function () { if (state.map) state.map.setZoom(Math.max(6, state.map.getZoom() - 1)); });
+    el("#spot-detail").addEventListener("close", function () { state.popupOpen = false; });
     el("[data-menu-open]").addEventListener("click", function () { menu.showModal(); });
     el("#menu-close").addEventListener("click", function () { menu.close(); });
     menu.addEventListener("click", function (event) { if (event.target === menu) {

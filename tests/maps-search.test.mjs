@@ -133,5 +133,14 @@ test('Naver marker lifecycle: filter replaces markers; popup and origin marker w
   t.state.onlyFree=true;
   t.applyFilter(true);
   assert.equal(t.state.map.zoom,18,'filtering must not reset the explored map viewport');
+  const detail = new Element();
+  detail.showModal = function () { this.open = true; };
+  detail.close = function () { this.open = false; };
+  t.nodes['#spot-detail'] = detail;
+  t.ctx.window.matchMedia = () => ({matches:true});
+  t.renderMarkers(); t.state.layer[0].events.click();
+  assert.equal(detail.open,true,'mobile marker must open a top-layer detail dialog');
+  assert.match(detail.innerHTML,/주차장/);
+  assert.equal(t.state.popupOpen,true);
 });
 
