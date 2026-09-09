@@ -5,8 +5,11 @@ export async function onRequestGet({ request, env }) {
   });
   const query = (new URL(request.url).searchParams.get('q') || '').trim();
   if (query.length < 2 || query.length > 100) return reply({ error: 'invalid_query' }, 400);
-  if (!env.NAVER_SEARCH_CLIENT_ID || !env.NAVER_SEARCH_CLIENT_SECRET) {
-    return reply({ error: 'search_unavailable' }, 503);
+  const missing = ['NAVER_SEARCH_CLIENT_ID', 'NAVER_SEARCH_CLIENT_SECRET']
+    .filter(name => !env[name]);
+  if (missing.length) {
+    // Report only expected variable names, never values or other bindings.
+    return reply({ error: 'search_unavailable', code: 'missing_configuration', missing }, 503);
   }
   const url = new URL('https://naverapihub.apigw.ntruss.com/search/v1/local');
   url.searchParams.set('query', query);
