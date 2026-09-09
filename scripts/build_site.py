@@ -656,6 +656,10 @@ def map_workspace(body):
     body = body.replace('<div id="nearby-result" hidden>%s</div>' % list_block(), '')
     body = body.replace(list_block(), '').replace(listbar_block(), '').replace(listbar_block(True), '')
     ads = re.findall(r'<aside class="ad-slot ad-top">.*?</aside>', body, re.S)
+    # Responsive ads force fixed-height ancestors to auto height. Use a standard
+    # fixed slot inside the independently scrolling results panel instead.
+    ads = [ad.replace('style="display:block"', 'style="display:block;width:300px;height:250px"')
+           .replace(' data-ad-format="auto" data-full-width-responsive="true"', '') for ad in ads]
     body = re.sub(r'<aside class="ad-slot ad-(?:top|bottom)">.*?</aside>', '', body, flags=re.S)
     navigation = re.findall(r'<h2>[^<]*</h2><div class="grid">.*?</div>', body, re.S)
     sharing = re.findall(r'<section class="share">.*?</section>', body, re.S)

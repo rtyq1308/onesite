@@ -188,10 +188,10 @@
     var box = document.createElement("aside");
     box.className = "ad-slot ad-feed";
     box.innerHTML = '<span class="ad-label">광고</span>' +
-      '<ins class="adsbygoogle" style="display:block"' +
+      '<ins class="adsbygoogle" style="display:block;width:300px;height:250px"' +
       ' data-ad-client="' + CFG.ad.client + '"' +
       ' data-ad-slot="' + CFG.ad.slot + '"' +
-      ' data-ad-format="auto" data-full-width-responsive="true"></ins>';
+      '></ins>';
     anchor.insertAdjacentElement("afterend", box);
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
