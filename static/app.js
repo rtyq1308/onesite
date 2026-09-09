@@ -120,7 +120,7 @@
     if (row._km != null) chips.push('<span class="chip plain">' + row._km.toFixed(1) + "km</span>");
 
     return '<article class="item" id="spot-' + index + '">' +
-      "<h3>" + esc(row.nm) + "</h3>" +
+      '<h3><button class="spot-focus" data-focus="' + index + '" aria-label="' + esc(row.nm) + ' 지도에서 보기">' + esc(row.nm) + '</button></h3>' +
       '<p class="addr">' + esc(row.ad) + "</p>" +
       '<div class="meta">' + chips.join("") + "</div>" +
       (kind === "partly" ? '<p class="warn-note">평일에는 요금을 받습니다</p>' : "") +
@@ -129,7 +129,7 @@
   }
 
   /* '무료만' 필터. 유료와 요일별(평일 유료)을 모두 걸러 상시 무료만 남긴다. */
-  function applyFilter() {
+  function applyFilter(keepView) {
     state.rows = state.onlyFree
       ? state.all.filter(function (r) { return r.fr; })
       : state.all;
@@ -140,7 +140,7 @@
         ? "무료 " + state.rows.length.toLocaleString() + "곳만 보는 중"
         : "전체 " + state.all.length.toLocaleString() + "곳";
     }
-    renderList();
+    renderList(keepView);
   }
 
   function bindFilter() {
@@ -150,14 +150,12 @@
       state.onlyFree = !state.onlyFree;
       track("filter_free", { on: state.onlyFree ? 1 : 0 });
       btn.setAttribute("aria-pressed", String(state.onlyFree));
-      btn.textContent = state.onlyFree
-        ? "전체 주차장 보기"
-        : "가까운 무료 주차장 우선으로 확인하기";
-      applyFilter();
+      btn.textContent = "상시 무료만";
+      applyFilter(true);
     });
   }
 
-  function renderList() {
+  function renderList(keepView) {
     var rows = state.rows;
     var box = el("#list");
     if (!box) return;
@@ -177,7 +175,7 @@
         : "";
     }
     placeFeedAd(rows.length);
-    fitAll();
+    if (!keepView) fitAll();
     renderMarkers();
   }
 
@@ -355,7 +353,7 @@
     state.map = new naver.maps.Map(node, {
       center: new naver.maps.LatLng(36.5, 127.8), zoom: 7,
       minZoom: 6, maxZoom: 19, zoomControl: true,
-      zoomControlOptions: { position: naver.maps.Position.TOP_RIGHT }
+      zoomControlOptions: { position: naver.maps.Position.BOTTOM_RIGHT }
     });
     naver.maps.Event.addListener(state.map, "idle", function () {
       if (state.popupOpen) return;
@@ -371,9 +369,11 @@
 
   function startRegionPage() {
     initMap();
+    bindNearby();
     getJSON(CFG.dataUrl).then(function (data) {
       state.all = expand(data.p);
       applyFilter();
+      setResultsContext("선택한 지역의 주차장입니다. 지도 중심으로 다시 찾을 수도 있어요.");
     }).catch(function (err) {
       el("#list").innerHTML = '<p class="empty">데이터를 불러오지 못했습니다. (' + esc(err.message) + ")</p>";
     });
@@ -469,9 +469,16 @@
         var got = state.browseCache[c.sido + "/" + c.nm];
         if (got) rows = rows.concat(got);
       });
-      if (!state.browse) return;
-      state.rows = rows;
-      renderMarkers();
+      if (!state.browse || state.map.getZoom() < DETAIL_ZOOM) return;
+      var bounds = state.map.getBounds();
+      var center = state.map.getCenter();
+      state.all = rows.filter(function (r) {
+        return bounds.hasLatLng(new naver.maps.LatLng(r.la, r.lo));
+      }).map(function (r) {
+        return Object.assign({}, r, { _km: distanceKm(center.lat(), center.lng(), r.la, r.lo) });
+      }).sort(function (a, b) { return a._km - b._km; });
+      applyFilter(true);
+      setResultsContext("현재 지도 안의 주차장 · 지도 중심에서 가까운 순 (인근 지역 데이터 기준)");
     }
 
     if (!missing.length) { paint(); return; }
@@ -483,7 +490,8 @@
         .catch(function () { state.browseCache[c.sido + "/" + c.nm] = []; });
     })).then(function () {
       state.browseLoading = false;
-      paint();
+      if (state.browse && state.map.getCenter().toString() !== centre.toString()) refreshBrowse();
+      else paint();
     });
   }
 
@@ -493,8 +501,10 @@
       clearClusters();
       loadDetail();
     } else {
-      state.rows = [];
-      renderMarkers();
+      state.all = [];
+      applyFilter(true);
+      if (el("#list")) el("#list").innerHTML = '<p class="empty">지역의 숫자를 누르면<br>주차장 위치와 요금이 나타납니다.</p>';
+      setResultsContext("목적지를 검색하거나 지도를 확대해 보세요.");
       drawClusters();
     }
   }
@@ -591,10 +601,14 @@
   }
 
   function startHomePage() {
-    var btn = el("#nearby");
-    if (!btn) return;
     initMap();
     startBrowse();
+    bindNearby();
+  }
+
+  function bindNearby() {
+    var btn = el("#nearby");
+    if (!btn) return;
 
     btn.addEventListener("click", function () {
       track("nearby_search");
@@ -693,6 +707,7 @@
         var bar = el("#listbar");
         if (bar) bar.hidden = false;   // 홈에서는 찾기 전까지 감춰둔다
         applyFilter();
+        setResultsContext((destinationName || "현재 위치") + " 주변 · 직선거리 순 (인근 지역 데이터 기준)");
         var freeCount = state.all.filter(function (r) { return r.fr; }).length;
         msg.textContent = (destinationName || "현재 위치") + " 주변 " +
           state.rows.length.toLocaleString() + "곳을 직선거리 순으로 보여줍니다 (인근 지역 데이터 기준)" +
@@ -966,6 +981,50 @@
     });
   }
 
+  function setResultsContext(text) {
+    var node = el("#results-context");
+    if (node) node.textContent = text;
+  }
+
+  function setSheet(expanded) {
+    var panel = el(".map-results"), button = el("#sheet-toggle");
+    if (!panel || !button) return;
+    panel.classList.toggle("expanded", expanded);
+    button.setAttribute("aria-expanded", String(expanded));
+    el("#sheet-action").textContent = expanded ? "접기 ↓" : "펼치기 ↑";
+  }
+
+  function bindMapWorkspace() {
+    var menu = el("#map-menu");
+    if (!menu) return;
+    el("[data-menu-open]").addEventListener("click", function () { menu.showModal(); });
+    el("#menu-close").addEventListener("click", function () { menu.close(); });
+    menu.addEventListener("click", function (event) { if (event.target === menu) {
+      var rect = menu.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) menu.close();
+    } });
+    el("#sheet-toggle").addEventListener("click", function () {
+      setSheet(this.getAttribute("aria-expanded") !== "true");
+    });
+    el("#map-research").addEventListener("click", function () {
+      if (!state.map) return;
+      var center = state.map.getCenter();
+      state.origin = [center.lat(), center.lng()];
+      loadNearby("지도 중심");
+    });
+    document.addEventListener("click", function (event) {
+      var button = event.target.closest && event.target.closest("[data-focus]");
+      if (!button || !state.map) return;
+      var row = state.rows[Number(button.dataset.focus)];
+      if (!row) return;
+      closePopup();
+      stopBrowse();
+      state.map.setCenter(new naver.maps.LatLng(row.la, row.lo));
+      state.map.setZoom(17, false);
+      setSheet(false);
+    });
+  }
+
   function bindGoto() {
     document.addEventListener("click", function (ev) {
       var btn = ev.target.closest && ev.target.closest("[data-goto]");
@@ -973,6 +1032,7 @@
       var card = document.getElementById("spot-" + btn.dataset.goto);
       if (!card) return;
       closePopup();
+      setSheet(true);
       card.scrollIntoView({ behavior: "smooth", block: "center" });
       card.classList.add("hit");
       setTimeout(function () { card.classList.remove("hit"); }, 2000);
@@ -1117,6 +1177,7 @@
     bindRouteTracking();
     bindFilter();
     bindDestinationSearch();   // 검색창이 없으면 아무 일도 하지 않는다
+    bindMapWorkspace();
     bindInstall();
     registerSW();
     if (CFG.mode === "region") startRegionPage();

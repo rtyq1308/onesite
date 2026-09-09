@@ -349,7 +349,7 @@ PAGE = PAGE.replace("{{SITE}}", SITE_URL)
 NAVER_MAP_CLIENT_ID = env("NAVER_MAP_CLIENT_ID", "y4040h6goe")
 
 # 목적지 검색창 노출 여부. 검색 인증값을 Cloudflare 에 넣은 뒤 "1" 로 켠다.
-SHOW_DESTINATION_SEARCH = env("SHOW_DESTINATION_SEARCH") == "1"
+SHOW_DESTINATION_SEARCH = env("SHOW_DESTINATION_SEARCH") != "0"
 MAP_HEAD = ""
 MAP_SCRIPTS = (
     '<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=%s&amp;submodules=geocoder"></script>'
@@ -647,8 +647,61 @@ def stat_block(pairs):
     return '<div class="stats">%s</div>' % cells
 
 
+def map_workspace(body):
+    """Keep regional content crawlable in a menu; give the map the main viewport."""
+    body = body.replace(destination_search(), '') if destination_search() else body
+    body = re.sub(r'<div id="map"[^>]*></div>', '', body)
+    body = re.sub(r'<p class="cta">.*?</p>', '', body, flags=re.S)
+    body = body.replace('<p class="note" id="nearby-msg"></p>', '')
+    body = body.replace('<div id="nearby-result" hidden>%s</div>' % list_block(), '')
+    body = body.replace(list_block(), '').replace(listbar_block(), '').replace(listbar_block(True), '')
+    ads = re.findall(r'<aside class="ad-slot ad-top">.*?</aside>', body, re.S)
+    body = re.sub(r'<aside class="ad-slot ad-(?:top|bottom)">.*?</aside>', '', body, flags=re.S)
+    navigation = re.findall(r'<h2>[^<]*</h2><div class="grid">.*?</div>', body, re.S)
+    sharing = re.findall(r'<section class="share">.*?</section>', body, re.S)
+    for section in navigation + sharing:
+        body = body.replace(section, '')
+    return (
+        '<div class="map-workspace">'
+        '<section class="map-controls" aria-label="주차장 찾기">'
+        '<div class="map-eyebrow">PARK EASY, PARK FREE</div>'
+        + destination_search()
+        + '<div class="map-tools"><button class="btn" id="nearby">◎ 내 주변</button>'
+          '<button class="btn" id="only-free" aria-pressed="false">상시 무료만</button>'
+          '<button class="btn" data-menu-open>지역·메뉴</button></div>'
+          '<p id="nearby-msg" class="note" role="status"></p></section>'
+          '<section class="map-canvas" aria-label="지도 탐색">'
+          '<div id="map" role="region" aria-label="주차장 지도"></div>'
+          '<button class="btn map-research" id="map-research">이 지도 중심에서 찾기</button>'
+          '<div class="map-legend"><span>● 무료</span><span>● 요일별 무료</span><span>● 유료</span></div>'
+          '</section><section class="map-results" aria-label="주차장 목록">'
+          '<button class="sheet-toggle" id="sheet-toggle" aria-expanded="false" aria-controls="results-scroll">'
+          '<span class="sheet-grip"></span><span>주차장 목록 <span id="sheet-action">펼치기 ↑</span></span></button>'
+          '<div class="results-heading"><div><span class="map-eyebrow">PARKING AROUND YOU</span>'
+          '<h2>주차할 곳, 한눈에</h2></div><span id="list-count" role="status"></span></div>'
+          '<div id="results-scroll" class="results-scroll">'
+          '<p class="results-context" id="results-context">지도를 확대하거나 목적지를 검색해 주세요.</p>'
+          + ''.join(ads) + list_block()
+          + '<p class="results-disclaimer">요금·운영시간은 방문 전 현장에서 확인하세요.</p></div></section>'
+          '<dialog id="map-menu" aria-labelledby="menu-title"><div class="menu-heading">'
+          '<h2 id="menu-title">지역 탐색 · 이용 안내</h2><button class="btn" id="menu-close">닫기 ✕</button></div>'
+          '<button class="btn" id="install-app" hidden>앱 설치 바로가기</button>'
+          + '<details open><summary>지역별 주차장 찾기</summary>' + ''.join(navigation) + '</details>'
+          + '<details><summary>공짜맵 공유하기</summary>' + ''.join(sharing) + '</details>'
+          + '<details><summary>서비스 소개 · 이용 안내</summary>' + body + '</details>'
+          + '<p class="note">자료: 공공데이터포털 · 서울 열린데이터광장</p>'
+          '<a href="/privacy/">개인정보처리방침</a></dialog>'
+          '<noscript><p>지도 검색은 자바스크립트가 필요합니다. <a href="/서울특별시/">서울 지역 목록 보기</a></p></noscript>'
+          '</div>'
+    )
+
+
 def render(path, title, desc, canonical, body, root, head="", scripts="", indexable=True):
     page = PAGE
+    if 'id="map"' in body:
+        body = map_workspace(body)
+        page = page.replace('<body>', '<body class="map-page">')
+        head += '<link rel="stylesheet" href="%sassets/map-layout.css?v=%s">' % (root, asset_version('map-layout.css'))
     robots = "" if indexable else '<meta name="robots" content="noindex,follow">'
     for key, value in [
         ("{{TITLE}}", title), ("{{DESC}}", desc), ("{{CANONICAL}}", canonical),

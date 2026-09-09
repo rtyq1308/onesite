@@ -8,13 +8,13 @@ export async function onRequestGet({ request, env }) {
   if (!env.NAVER_SEARCH_CLIENT_ID || !env.NAVER_SEARCH_CLIENT_SECRET) {
     return reply({ error: 'search_unavailable' }, 503);
   }
-  const url = new URL('https://openapi.naver.com/v1/search/local.json');
+  const url = new URL('https://naverapihub.apigw.ntruss.com/search/v1/local');
   url.searchParams.set('query', query);
   url.searchParams.set('display', '5');
   try {
     const result = await fetch(url, {
-      headers: { 'X-Naver-Client-Id': env.NAVER_SEARCH_CLIENT_ID,
-        'X-Naver-Client-Secret': env.NAVER_SEARCH_CLIENT_SECRET },
+      headers: { 'X-NCP-APIGW-API-KEY-ID': env.NAVER_SEARCH_CLIENT_ID,
+        'X-NCP-APIGW-API-KEY': env.NAVER_SEARCH_CLIENT_SECRET },
       signal: AbortSignal.timeout(6000)
     });
     if (!result.ok) return reply({ error: 'search_unavailable' }, 502);

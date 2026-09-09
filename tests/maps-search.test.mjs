@@ -23,9 +23,11 @@ test('missing configuration returns a safe 503', async () => {
 });
 test('normalizes WGS84 coordinates and removes markup; secrets stay upstream', async () => {
   const handler = api(async (url, options) => {
-    assert.equal(url.hostname, 'openapi.naver.com');
+    assert.equal(url.hostname, 'naverapihub.apigw.ntruss.com');
+    assert.equal(url.pathname, '/search/v1/local');
     assert.equal(url.searchParams.get('display'), '5');
-    assert.equal(options.headers['X-Naver-Client-Secret'], 'test-secret');
+    assert.equal(options.headers['X-NCP-APIGW-API-KEY-ID'], 'test-id');
+    assert.equal(options.headers['X-NCP-APIGW-API-KEY'], 'test-secret');
     return Response.json({ items: [
       { title: '<b>서울역</b>', roadAddress: '서울 용산구', mapx: '1269700000', mapy: '375500000' },
       { title: 'invalid', mapx: 'x', mapy: '0' }
@@ -127,5 +129,9 @@ test('Naver marker lifecycle: filter replaces markers; popup and origin marker w
   assert.equal(t.state.map.center.lat(),37.55); assert.equal(t.state.map.zoom,15);
   assert.equal(t.state.originMarker.title,'목적지');
   const first=t.state.originMarker; await t.loadNearby('새 목적지'); assert.equal(first.map,null);
+  t.state.map.setZoom(18);
+  t.state.onlyFree=true;
+  t.applyFilter(true);
+  assert.equal(t.state.map.zoom,18,'filtering must not reset the explored map viewport');
 });
 
