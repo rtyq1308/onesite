@@ -83,7 +83,8 @@ test('search renders text safely and selecting destination loads nearby region r
   assert.equal(button.children[0].innerHTML, '');
   button.events.click(); await flush();
   assert.equal(t.state.all[0].nm, '가까운 곳');
-  assert.match(t.nodes['#destination-status'].textContent, /직선거리/);
+  assert.equal(t.nodes['#destination-status'].textContent, '');
+  assert.equal(t.nodes['#nearby-msg'].textContent, '');
   t.state.onlyFree = true; t.applyFilter(); assert.equal(t.state.rows.length, 1);
 });
 test('search outage offers recovery instead of an empty success', async () => {

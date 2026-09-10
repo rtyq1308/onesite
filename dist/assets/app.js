@@ -718,10 +718,10 @@
         if (bar) bar.hidden = false;   // 홈에서는 찾기 전까지 감춰둔다
         applyFilter();
         setResultsContext((destinationName || "현재 위치") + " 주변 · 직선거리 순 (인근 지역 데이터 기준)");
-        var freeCount = state.all.filter(function (r) { return r.fr; }).length;
-        msg.textContent = (destinationName || "현재 위치") + " 주변 " +
-          state.rows.length.toLocaleString() + "곳을 직선거리 순으로 보여줍니다 (인근 지역 데이터 기준)" +
-          (freeCount ? " (무료 " + freeCount.toLocaleString() + "곳)" : "") + ".";
+        // 조회가 끝나면 상단 안내 영역을 비워 지도 위 검색 패널을 줄인다.
+        [el("#nearby-msg"), el("#destination-status")].forEach(function (node) {
+          if (node) node.textContent = "";
+        });
         if (btn) { btn.textContent = "다시 찾기"; btn.disabled = false; }
         if (state.map) {
           if (state.originMarker) state.originMarker.setMap(null);
