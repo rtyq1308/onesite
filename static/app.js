@@ -1007,6 +1007,19 @@
   function bindMapWorkspace() {
     var menu = el("#map-menu");
     if (!menu) return;
+    var searchToggle = el("#search-toggle"), searchPanel = el("#map-search-panel");
+    if (searchToggle && searchPanel) {
+      searchToggle.addEventListener("click", function () {
+        searchPanel.hidden = !searchPanel.hidden;
+        searchToggle.setAttribute("aria-expanded", String(!searchPanel.hidden));
+        if (!searchPanel.hidden) el("#destination-query").focus();
+      });
+      searchPanel.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          searchPanel.hidden = true; searchToggle.setAttribute("aria-expanded", "false"); searchToggle.focus();
+        }
+      });
+    }
     el("#zoom-in").addEventListener("click", function () { if (state.map) state.map.setZoom(Math.min(19, state.map.getZoom() + 1)); });
     el("#zoom-out").addEventListener("click", function () { if (state.map) state.map.setZoom(Math.max(6, state.map.getZoom() - 1)); });
     el("#spot-detail").addEventListener("close", function () { state.popupOpen = false; });
