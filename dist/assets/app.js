@@ -1004,6 +1004,67 @@
     el("#sheet-action").textContent = expanded ? "접기 ↓" : "펼치기 ↑";
   }
 
+  function bindMapViewport() {
+    var main = el("main.wrap"), canvas = el(".map-canvas");
+    if (!main || !canvas || !window.requestAnimationFrame) return;
+    var frame = 0, until = 0, lastSize = "", lastInsets = "";
+    function sync() {
+      frame = 0;
+      var bodyStyle = window.getComputedStyle(document.body);
+      var top = 0, bottom = 0;
+      // Only reclaim stale spacing for a known anchor whose ad has left the viewport.
+      // The advertising element and its styles remain under AdSense control.
+      document.querySelectorAll('ins[data-anchor-status]').forEach(function (anchor) {
+        var style = window.getComputedStyle(anchor), rect = anchor.getBoundingClientRect();
+        if (style.position !== "fixed") return;
+        if (style.top !== "auto" && (style.display === "none" || rect.bottom <= 1 || (rect.top < 0 && rect.bottom <= 40))) {
+          top = parseFloat(bodyStyle.paddingTop) || 0;
+        }
+        if (style.bottom !== "auto" && style.top === "auto" &&
+            (style.display === "none" || rect.top >= window.innerHeight - 1)) {
+          bottom = parseFloat(bodyStyle.paddingBottom) || 0;
+        }
+      });
+      var insets = top + ":" + bottom;
+      if (insets !== lastInsets) {
+        lastInsets = insets;
+        main.style.marginTop = top ? -top + "px" : "";
+        main.style.marginBottom = bottom ? -bottom + "px" : "";
+      }
+      var rect = canvas.getBoundingClientRect();
+      var size = Math.round(rect.width) + ":" + Math.round(rect.height);
+      if (state.map && size !== lastSize && rect.width > 0 && rect.height > 0) {
+        lastSize = size;
+        state.map.autoResize();
+      }
+      if (Date.now() < until) frame = window.requestAnimationFrame(sync);
+    }
+    function schedule() {
+      until = Date.now() + 700;
+      if (!frame) frame = window.requestAnimationFrame(sync);
+    }
+    if (window.ResizeObserver) new window.ResizeObserver(schedule).observe(canvas);
+    if (window.MutationObserver) {
+      var observer = new window.MutationObserver(function (records) {
+        if (records.some(function (r) {
+          return r.target === document.body ||
+            (r.target.closest && r.target.closest('ins[data-anchor-status]')) ||
+            (r.type === "childList" && Array.from(r.addedNodes).some(function (n) {
+              return n.nodeType === 1 && (n.matches('ins[data-anchor-status]') || n.querySelector('ins[data-anchor-status]'));
+            }));
+        })) schedule();
+      });
+      observer.observe(document.body, {attributes:true, attributeFilter:["style","class","data-anchor-status"], childList:true, subtree:true});
+    }
+    window.addEventListener("resize", schedule);
+    if (window.visualViewport) window.visualViewport.addEventListener("resize", schedule);
+    document.addEventListener("transitionend", schedule);
+    document.addEventListener("click", function (event) {
+      if (event.target.closest && event.target.closest('ins[data-anchor-status]')) schedule();
+    });
+    schedule();
+  }
+
   function bindMapWorkspace() {
     var menu = el("#map-menu");
     if (!menu) return;
@@ -1208,6 +1269,8 @@
     registerSW();
     if (CFG.mode === "region") startRegionPage();
     else if (CFG.mode === "home") startHomePage();
+
+    bindMapViewport();
 
     // 레이아웃이 안정된 뒤 광고 요청
     setTimeout(pushAds, 300);

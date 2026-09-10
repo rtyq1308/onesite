@@ -60,7 +60,7 @@ function app(mode = 'home', fetch = async () => Response.json({ items: [] })) {
     window: { addEventListener() {}, FREEMAP: { mode, indexUrl: '/data/index.json', dataBase: '/data/' } },
     document: { querySelector: s => nodes[s] || null, createElement: () => new Element(), addEventListener() {} }
   });
-  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers, declutter};\n})();'), ctx);
+  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers, declutter, bindMapViewport};\n})();'), ctx);
   return { ...ctx.testAPI, nodes, ctx };
 }
 const flush = () => new Promise(resolve => setTimeout(resolve, 20));
@@ -162,4 +162,22 @@ test('dense viewport caps individual markers and preserves every overflow parkin
   assert.equal(overlapping.labeled.length,1);
   assert.equal(overlapping.groups.length,1);
   assert.equal(overlapping.groups[0].count,4999);
+});
+
+test('collapsed anchor reclaims stale padding and resizes map without zoom interaction', () => {
+  const t=app('region'); let tick, mutation, resized=0, closed=false, padding='450px';
+  const main={style:{}}, canvas={getBoundingClientRect:()=>({width:390,height:closed?664:214})};
+  t.nodes['main.wrap']=main; t.nodes['.map-canvas']=canvas;
+  const anchor={getBoundingClientRect:()=>({bottom:closed?0:450,top:closed?-450:0})};
+  t.ctx.document.body={}; t.ctx.document.querySelectorAll=()=>[anchor];
+  Object.assign(t.ctx.window,{innerHeight:844,requestAnimationFrame:fn=>{tick=fn;return 1;},
+    getComputedStyle:n=>n===t.ctx.document.body?{paddingTop:padding,paddingBottom:'0px'}:{position:'fixed',top:'0px',bottom:'auto',display:'block'},
+    MutationObserver:class {constructor(fn){mutation=fn;} observe(){} }});
+  t.state.map={autoResize(){resized++;}};
+  t.bindMapViewport(); tick(); assert.equal(main.style.marginTop,'');
+  closed=true; mutation([{target:t.ctx.document.body}]); tick();
+  assert.equal(main.style.marginTop,'-450px'); assert.equal(resized,2);
+  padding='0px'; tick(); assert.equal(main.style.marginTop,'');
+  closed=false; padding='450px'; tick(); assert.equal(main.style.marginTop,'');
+  assert.equal(resized,3);
 });
