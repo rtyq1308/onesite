@@ -1004,9 +1004,41 @@
     el("#sheet-action").textContent = expanded ? "접기 ↓" : "펼치기 ↑";
   }
 
+  function bindAdViewport() {
+    var body = document.body;
+    var canvas = el(".map-canvas");
+    if (!canvas) return;
+    var frame = 0;
+    function sync() {
+      frame = 0;
+      var style = window.getComputedStyle(body);
+      var top = Math.max(0, parseFloat(style.paddingTop) || 0);
+      var bottom = Math.max(0, parseFloat(style.paddingBottom) || 0);
+      var root = document.documentElement.style;
+      root.setProperty("--anchor-top", top + "px");
+      root.setProperty("--anchor-bottom", bottom + "px");
+      if (state.map && state.map.autoResize) state.map.autoResize();
+    }
+    function schedule() {
+      if (!frame) frame = window.requestAnimationFrame(sync);
+    }
+    // AdSense changes body padding when an anchor opens or closes. Keep the
+    // site outside its flex layout and update both CSS offsets and map size.
+    if (window.MutationObserver) {
+      new window.MutationObserver(schedule).observe(body, { attributes: true, attributeFilter: ["style", "class"] });
+    }
+    if (window.ResizeObserver) new window.ResizeObserver(schedule).observe(canvas);
+    body.addEventListener("transitionend", schedule);
+    body.addEventListener("animationend", schedule);
+    window.addEventListener("resize", schedule);
+    if (window.visualViewport) window.visualViewport.addEventListener("resize", schedule);
+    sync();
+  }
+
   function bindMapWorkspace() {
     var menu = el("#map-menu");
     if (!menu) return;
+    bindAdViewport();
     el("#zoom-in").addEventListener("click", function () { if (state.map) state.map.setZoom(Math.min(19, state.map.getZoom() + 1)); });
     el("#zoom-out").addEventListener("click", function () { if (state.map) state.map.setZoom(Math.max(6, state.map.getZoom() - 1)); });
     el("#spot-detail").addEventListener("close", function () { state.popupOpen = false; });

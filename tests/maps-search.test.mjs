@@ -60,10 +60,32 @@ function app(mode = 'home', fetch = async () => Response.json({ items: [] })) {
     window: { addEventListener() {}, FREEMAP: { mode, indexUrl: '/data/index.json', dataBase: '/data/' } },
     document: { querySelector: s => nodes[s] || null, createElement: () => new Element(), addEventListener() {} }
   });
-  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers};\n})();'), ctx);
+  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers, bindAdViewport};\n})();'), ctx);
   return { ...ctx.testAPI, nodes, ctx };
 }
 const flush = () => new Promise(resolve => setTimeout(resolve, 20));
+test('anchor close restores viewport offsets and refreshes map sizing', () => {
+  const t = app();
+  let observer, pending, resized = 0;
+  const values = {};
+  const padding = {paddingTop:'130px',paddingBottom:'0px'};
+  t.nodes['.map-canvas'] = new Element();
+  t.ctx.document.body = new Element();
+  t.ctx.document.documentElement = {style:{setProperty:(k,v)=>{values[k]=v;}}};
+  t.ctx.window.getComputedStyle = () => padding;
+  t.ctx.window.requestAnimationFrame = fn => { pending=fn; return 1; };
+  t.ctx.window.MutationObserver = class { constructor(fn) {observer=fn;} observe() {} };
+  t.state.map = {autoResize() {resized++;}};
+  t.bindAdViewport();
+  assert.equal(values['--anchor-top'],'130px');
+  padding.paddingTop='0px'; observer(); pending();
+  assert.equal(values['--anchor-top'],'0px');
+  assert.equal(resized,2);
+  padding.paddingBottom='120px'; observer(); pending();
+  assert.equal(values['--anchor-bottom'],'120px');
+  padding.paddingBottom='0px'; observer(); pending();
+  assert.equal(values['--anchor-bottom'],'0px');
+});
 test('map SDK missing still leaves readable fallback and region list', () => {
   const t = app('region'); t.initMap();
   assert.match(t.nodes['#map'].innerHTML, /지도를 불러오지 못했습니다/);
