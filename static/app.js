@@ -201,49 +201,36 @@
     }
   }
 
-  /* 도심은 한 화면에 수백 곳이 몰려 라벨이 서로 덮어버린다.
-     화면 안에 있는 것만, 이미 놓인 라벨과 겹치지 않는 것만 골라 그린다.
-     state.rows 가 이미 무료 → 요일별 → 싼 유료 순으로 정렬돼 있어서
-     자리를 먼저 차지하는 쪽이 자연스럽게 무료와 저렴한 곳이 된다. */
-  var LABEL_MAX = 260;   // 한 화면에 그릴 글자 라벨 상한
-
+  // 개별 DOM 마커는 100개, 나머지는 최대 40개 공간 묶음으로 제한한다.
+  var LABEL_MAX = 100;
   function declutter() {
-    var bounds = state.map.getBounds();
-    var placed = [], labeled = [], dots = [];
-
-    for (var i = 0; i < state.rows.length; i++) {
-      var r = state.rows[i];
-      if (!bounds.hasLatLng(new naver.maps.LatLng(r.la, r.lo))) continue;
-      // 화면 안에 있으면 하나도 빼지 않는다. 라벨 자리가 없으면 점으로 남긴다.
-      if (labeled.length + dots.length >= 3000) break;
-
-      var pt = state.map.getProjection().fromCoordToOffset(new naver.maps.LatLng(r.la, r.lo));
-
-      // state.rows 가 무료 → 요일별 → 싼 유료 순이라, 앞에서부터 자리를
-      // 채우면 무료가 언제나 먼저 라벨을 가져간다. 유료에 밀리는 일은 없다.
-      // 겹치는 것까지 전부 글자로 그리면 제주처럼 무료가 1,300곳인 곳에서
-      // 글자가 뭉쳐 읽히지도 않고 지도가 버벅인다. 겹치면 점으로 남기고,
-      // 확대해서 자리가 생기면 그때 글자로 바뀐다.
+    var bounds = state.map.getBounds(), projection = state.map.getProjection();
+    var placed = [], labeled = [], overflow = [];
+    state.rows.forEach(function (r, i) {
+      var pos = new naver.maps.LatLng(r.la, r.lo);
+      if (!bounds.hasLatLng(pos)) return;
+      var pt = projection.fromCoordToOffset(pos);
       var clear = labeled.length < LABEL_MAX;
       for (var j = 0; clear && j < placed.length; j++) {
-        if (Math.abs(placed[j].x - pt.x) < 56 && Math.abs(placed[j].y - pt.y) < 22) {
-          clear = false;
-        }
+        if (Math.abs(placed[j].x - pt.x) < 56 && Math.abs(placed[j].y - pt.y) < 22) clear = false;
       }
-      if (clear) {
-        placed.push(pt);
-        labeled.push({ row: r, idx: i });
-      } else {
-        // 자리가 없다고 지워버리면 "여기 주차장이 몰려 있다"는 정보가 사라진다.
-        // 라벨 대신 점으로 남겨두고, 확대하면 라벨로 바뀐다.
-        dots.push({ row: r, idx: i });
-      }
-    }
-    return { labeled: labeled, dots: dots };
+      if (clear) { placed.push(pt); labeled.push({row:r, idx:i}); }
+      else overflow.push({row:r, pt:pt});
+    });
+    var groups, size = 80;
+    do {
+      groups = Object.create(null);
+      overflow.forEach(function (item) {
+        var key = Math.floor(item.pt.x / size) + ':' + Math.floor(item.pt.y / size);
+        var group = groups[key] || (groups[key] = {count:0, la:0, lo:0});
+        group.count++; group.la += item.row.la; group.lo += item.row.lo;
+      });
+      size *= 2;
+    } while (Object.keys(groups).length > 40);
+    return {labeled:labeled, dots:[], groups:Object.keys(groups).map(function (key) {
+      var g = groups[key]; g.la /= g.count; g.lo /= g.count; return g;
+    })};
   }
-
-  // 점 수백 개를 DOM 으로 그리면 느리다. 캔버스 한 장에 그린다.
-
 
   var DOT_COLOR = {
     free: "#1a7a5c", partly: "#c2820a", paid: "#2f5fb8", unknown: "#6b7280"
@@ -290,6 +277,19 @@
     state.layer = [];
     if (!state.rows.length) return;
     var picked = declutter();
+    picked.groups.forEach(function (group) {
+      var pos = new naver.maps.LatLng(group.la, group.lo);
+      var marker = new naver.maps.Marker({position:pos, map:state.map,
+        title: '주차장 ' + group.count + '곳 · 확대해서 보기',
+        icon:{content:'<button class="cluster" aria-label="주차장 ' + group.count + '곳 확대"><span>' + group.count.toLocaleString() + '</span></button>',
+          anchor:new naver.maps.Point(24,20)}});
+      naver.maps.Event.addListener(marker, 'click', function () {
+        closePopup();
+        state.map.setCenter(pos);
+        state.map.setZoom(Math.min(state.map.getZoom() + 2, 19), false);
+      });
+      state.layer.push(marker);
+    });
     picked.labeled.concat(picked.dots).forEach(function (item, idx) {
       var r = item.row, kind = kindOf(r);
       var label = kind === "free" ? "무료" : kind === "partly"

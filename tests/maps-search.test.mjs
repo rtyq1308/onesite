@@ -60,7 +60,7 @@ function app(mode = 'home', fetch = async () => Response.json({ items: [] })) {
     window: { addEventListener() {}, FREEMAP: { mode, indexUrl: '/data/index.json', dataBase: '/data/' } },
     document: { querySelector: s => nodes[s] || null, createElement: () => new Element(), addEventListener() {} }
   });
-  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers};\n})();'), ctx);
+  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers, declutter};\n})();'), ctx);
   return { ...ctx.testAPI, nodes, ctx };
 }
 const flush = () => new Promise(resolve => setTimeout(resolve, 20));
@@ -144,3 +144,21 @@ test('Naver marker lifecycle: filter replaces markers; popup and origin marker w
   assert.equal(t.state.popupOpen,true);
 });
 
+
+test('dense viewport caps individual markers and preserves every overflow parking in bounded groups', () => {
+  const t = app('region');
+  t.ctx.naver = {maps:{LatLng:class {constructor(la,lo) {this.la=la;this.lo=lo;}}}};
+  t.state.map = {getBounds:()=>({hasLatLng:p=>p.la>=0}),
+    getProjection:()=>({fromCoordToOffset:p=>({x:p.lo*100,y:p.la*100})})};
+  t.state.rows = Array.from({length:5000},(_,i)=>({la:Math.floor(i/100),lo:i%100}));
+  t.state.rows.push({la:-1,lo:0});
+  const result=t.declutter();
+  assert.equal(result.labeled.length,100);
+  assert.ok(result.groups.length<=40);
+  assert.equal(result.groups.reduce((n,g)=>n+g.count,0)+result.labeled.length,5000);
+  t.state.rows=Array.from({length:5000},()=>({la:1,lo:1}));
+  const overlapping=t.declutter();
+  assert.equal(overlapping.labeled.length,1);
+  assert.equal(overlapping.groups.length,1);
+  assert.equal(overlapping.groups[0].count,4999);
+});
