@@ -150,7 +150,7 @@
       state.onlyFree = !state.onlyFree;
       track("filter_free", { on: state.onlyFree ? 1 : 0 });
       btn.setAttribute("aria-pressed", String(state.onlyFree));
-      btn.textContent = "상시 무료만";
+      btn.textContent = "무료만 확인";
       applyFilter(true);
     });
   }
