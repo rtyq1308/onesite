@@ -201,8 +201,8 @@
     }
   }
 
-  // 개별 DOM 마커는 100개, 나머지는 최대 40개 공간 묶음으로 제한한다.
-  var LABEL_MAX = 100;
+  // 개별 DOM 마커는 50개, 나머지는 최대 40개 공간 묶음으로 제한한다.
+  var LABEL_MAX = 50;
   function declutter() {
     var bounds = state.map.getBounds(), projection = state.map.getProjection();
     var placed = [], labeled = [], overflow = [];

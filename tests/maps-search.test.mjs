@@ -154,7 +154,7 @@ test('dense viewport caps individual markers and preserves every overflow parkin
   t.state.rows = Array.from({length:5000},(_,i)=>({la:Math.floor(i/100),lo:i%100}));
   t.state.rows.push({la:-1,lo:0});
   const result=t.declutter();
-  assert.equal(result.labeled.length,100);
+  assert.equal(result.labeled.length,50);
   assert.ok(result.groups.length<=40);
   assert.equal(result.groups.reduce((n,g)=>n+g.count,0)+result.labeled.length,5000);
   t.state.rows=Array.from({length:5000},()=>({la:1,lo:1}));
