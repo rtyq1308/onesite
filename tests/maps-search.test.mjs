@@ -60,7 +60,7 @@ function app(mode = 'home', fetch = async () => Response.json({ items: [] })) {
     window: { addEventListener() {}, FREEMAP: { mode, indexUrl: '/data/index.json', dataBase: '/data/' } },
     document: { querySelector: s => nodes[s] || null, createElement: () => new Element(), addEventListener() {} }
   });
-  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers, declutter, bindMapViewport, placeFeedAd};\n})();'), ctx);
+  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers, declutter, bindMapViewport, placeFeedAd, actionsHTML};\n})();'), ctx);
   return { ...ctx.testAPI, nodes, ctx };
 }
 const flush = () => new Promise(resolve => setTimeout(resolve, 20));
@@ -197,4 +197,13 @@ test('feed ad waits for visibility and is requested only once across result upda
   const markup=slot.innerHTML;
   t.placeFeedAd(20); visible([{isIntersecting:true,intersectionRatio:1}]);
   assert.equal(t.ctx.window.adsbygoogle.length,1); assert.equal(slot.innerHTML,markup);
+});
+
+test('Kakao directions use native same-tab HTTPS navigation without an early app launch', () => {
+  const t=app('region');
+  const html=t.actionsHTML({nm:'주차장',ad:'서울',la:37.55,lo:126.97},null);
+  const link=html.match(/<a class="act kakao"[^>]*>/)[0];
+  assert.match(link,/href="https:\/\/map.kakao.com\/link\/map\//);
+  assert.doesNotMatch(link,/target=|data-app=/);
+  assert.doesNotMatch(appSource,/kakaomap:\/\/|bindKakaoApp/);
 });

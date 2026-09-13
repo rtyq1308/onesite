@@ -59,18 +59,14 @@
     var naver = "https://map.naver.com/p/search/" +
       encodeURIComponent(row.ad || row.nm);
     var google = "https://www.google.com/maps/dir/?api=1&destination=" + row.la + "," + row.lo;
-    // 카카오맵은 앱 스킴으로 보내면 경로 안내가 바로 뜬다. 앱이 없으면
-    // 아무 일도 안 일어나므로 href 에는 웹 링크를 남겨두고(bindKakaoApp)
-    // 일정 시간 안에 앱이 안 열리면 웹으로 되돌린다.
-    // link/to 는 카카오에 등록된 장소가 아니면 도착지가 비므로 link/map 을 쓴다.
+    // Same-tab HTTPS navigation lets an intervening vignette finish first.
+    // Kakao handles app opening on its destination page, not on this click.
     var kakaoWeb = "https://map.kakao.com/link/map/" +
       encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
-    var kakaoApp = "kakaomap://route?ep=" + row.la + "," + row.lo + "&by=CAR";
     // 카카오 계열은 브랜드 노란색(.kakao)으로 구분한다.
     return '<a class="act" href="' + naver + '">네이버지도 길찾기</a>' +
       '<a class="act" href="' + google + '">구글맵 길찾기</a>' +
-      '<a class="act kakao" href="' + kakaoWeb + '" data-app="' + esc(kakaoApp) +
-      '">카카오맵 길찾기</a>' +
+      '<a class="act kakao" href="' + kakaoWeb + '">카카오맵 길찾기</a>' +
       (row.tel ? '<a class="act" href="tel:' + esc(row.tel) + '">전화 ' + esc(row.tel) + "</a>" : "") +
       (index != null ? '<button type="button" class="act" data-goto="' + index + '">목록에서 보기</button>' : "");
   }
@@ -1149,23 +1145,6 @@
     });
   }
 
-  /* 카카오맵 길찾기 — 휴대폰에서는 앱 스킴으로 먼저 시도한다.
-     앱이 열리면 페이지가 백그라운드로 넘어가므로 document.hidden 으로 판별하고,
-     안 열렸으면 href 에 적힌 웹 지도로 이어서 이동한다. */
-  function bindKakaoApp() {
-    if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) return;
-    document.addEventListener("click", function (ev) {
-      var a = ev.target.closest && ev.target.closest("a[data-app]");
-      if (!a) return;
-      ev.preventDefault();
-      var web = a.getAttribute("href");
-      window.location.href = a.getAttribute("data-app");
-      setTimeout(function () {
-        if (!document.hidden) window.location.href = web;
-      }, 1200);
-    });
-  }
-
   /* 광고는 레이아웃이 잡힌 뒤에 요청한다. HTML 안에서 바로 push 하면
      폭이 0으로 잡혀 availableWidth=0 오류가 나고 지면이 비어버린다. */
   function pushAds() {
@@ -1283,7 +1262,6 @@
     reportDisplayMode();
     bindShare();
     bindGoto();
-    bindKakaoApp();
     bindRouteTracking();
     bindFilter();
     bindDestinationSearch();   // 검색창이 없으면 아무 일도 하지 않는다
