@@ -15,7 +15,7 @@
   function advertisement() {
     const slot=document.querySelector('#reading-ad');
     if(!slot || !config.ad || !config.ad.client || !config.ad.slot) return;
-    slot.innerHTML='<span>광고</span><ins class="adsbygoogle" style="display:block;width:300px;height:250px" data-ad-client="'+esc(config.ad.client)+'" data-ad-slot="'+esc(config.ad.slot)+'"></ins>';
+    slot.innerHTML='<span>광고</span><ins class="adsbygoogle" style="display:block;width:250px;height:250px" data-ad-client="'+esc(config.ad.client)+'" data-ad-slot="'+esc(config.ad.slot)+'"></ins>';
     let requested=false;
     function request(){if(requested) return; requested=true;try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){slot.hidden=true;}}
     if(window.IntersectionObserver){const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){request();observer.disconnect();}},{rootMargin:'150px'});observer.observe(slot);}else request();
