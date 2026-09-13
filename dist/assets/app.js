@@ -64,7 +64,7 @@
     var kakaoWeb = "https://map.kakao.com/link/map/" +
       encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
     // 카카오 계열은 브랜드 노란색(.kakao)으로 구분한다.
-    return '<a class="act" href="' + naver + '">네이버지도 길찾기</a>' +
+    return (row.id && row.area ? '<a class="act" href="/parking/?area=' + encodeURIComponent(row.area) + '&amp;id=' + encodeURIComponent(row.id) + '">요금·무료 조건 상세</a>' : '') + '<a class="act" href="' + naver + '">네이버지도 길찾기</a>' +
       '<a class="act" href="' + google + '">구글맵 길찾기</a>' +
       '<a class="act kakao" href="' + kakaoWeb + '">카카오맵 길찾기</a>' +
       (row.tel ? '<a class="act" href="tel:' + esc(row.tel) + '">전화 ' + esc(row.tel) + "</a>" : "") +
@@ -735,6 +735,11 @@
         var bar = el("#listbar");
         if (bar) bar.hidden = false;   // 홈에서는 찾기 전까지 감춰둔다
         applyFilter();
+        var compare = el("#compare-nearby");
+        if (compare) {
+          compare.hidden = false;
+          compare.href = "/compare/?lat=" + origin[0] + "&lng=" + origin[1] + "&name=" + encodeURIComponent(destinationName || "현재 위치");
+        }
         setResultsContext((destinationName || "현재 위치") + " 주변 · 직선거리 순 (인근 지역 데이터 기준)");
         // 조회가 끝나면 상단 안내 영역을 비워 지도 위 검색 패널을 줄인다.
         [el("#nearby-msg"), el("#destination-status")].forEach(function (node) {

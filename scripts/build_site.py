@@ -690,6 +690,7 @@ def map_workspace(body):
           '<div class="results-heading"><div><span class="map-eyebrow">PARKING AROUND YOU</span>'
           '<h2>주차할 곳, 한눈에</h2></div><span id="list-count" role="status"></span></div>'
           '<div id="results-scroll" class="results-scroll">'
+          '<a id="compare-nearby" class="btn" hidden>주변 주차장 비교하기</a>'
           '<p class="results-context" id="results-context">지도를 확대하거나 목적지를 검색해 주세요.</p>'
           + list_block()
           + '<aside id="feed-ad" class="ad-slot ad-feed" hidden aria-label="광고"></aside>'
@@ -740,7 +741,7 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
 # --------------------------------------------------------------------------
 
 FIELDS = ["nm", "ad", "la", "lo", "tm", "cp", "tel", "kd", "se",
-          "fr", "fl", "p30", "bc", "bt", "ac", "at", "dm"]
+          "fr", "fl", "p30", "bc", "bt", "ac", "at", "dm", "id", "area"]
 
 
 def lead_text(free_n, partly_n, paid_n, cheapest):
@@ -894,6 +895,18 @@ def build_sido_page(sido, siblings, total):
                % json.dumps(breadcrumb, ensure_ascii=False))
     render(os.path.join(sido, "index.html"), title, desc,
            "%s/%s/" % (SITE_URL, sido), body, "../", scripts=scripts)
+
+
+def build_reading_pages():
+    for mode, title in [("parking", "주차장 요금·무료 조건 상세"), ("compare", "목적지 주변 주차장 비교")]:
+        body = ('<div class="reading-page"><a href="/">← 지도로 돌아가기</a>'
+                '<h1 id="reading-title">%s</h1><div id="reading-content" aria-live="polite">정보를 불러오는 중입니다.</div>'
+                '<noscript>상세 정보를 보려면 자바스크립트를 켜 주세요. <a href="/">지도와 지역 목록</a></noscript></div>') % title
+        config = json.dumps({"mode": mode, "ad": {"client": ADSENSE_CLIENT, "slot": AD_SLOTS["feed"]}}, ensure_ascii=False)
+        render(mode + "/index.html", title + " | 공짜맵", title, SITE_URL + "/" + mode + "/", body, "../",
+               head='<link rel="stylesheet" href="/assets/reading.css?v=%s">' % asset_version('reading.css'),
+               scripts='<script>window.READING=%s;</script><script src="/assets/reading.js?v=%s" defer></script>' % (config, asset_version('reading.js')),
+               indexable=False)
 
 
 def build_home(index, total, total_slots, top_regions, free_total):
@@ -1172,6 +1185,8 @@ def main():
 
     regions = {}
     for row in rows:
+        row["id"] = hashlib.sha256(json.dumps([row["nm"], row["ad"], row["la"], row["lo"]], ensure_ascii=False).encode()).hexdigest()[:20]
+        row["area"] = row["sido"] + "/" + row["sigungu"]
         regions.setdefault((row["sido"], row["sigungu"]), []).append(row)
 
     reset_dist()
@@ -1237,6 +1252,7 @@ def main():
         key=lambda x: -x[2],
     )[:12]
 
+    build_reading_pages()
     build_home(index, len(rows), total_slots, top_regions, free_n)
     hashes.append((SITE_URL + "/", content_hash(index)))
 

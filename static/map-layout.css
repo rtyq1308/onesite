@@ -158,3 +158,5 @@
  .map-brand small {font-size:8px;}
  .map-top-tools .btn {font-size:11px;padding:4px 2px;}
 }
+
+#compare-nearby:not([hidden]) {display:block;margin:10px 18px;text-align:center;}
