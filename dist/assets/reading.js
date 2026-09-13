@@ -11,7 +11,7 @@
   function km(a,b,c,d) { const rad=Math.PI/180, x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2; return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)); }
   function fee(row) { return row.fr ? '무료로 등록' : row.p30 ? '30분 환산 '+money(row.p30) : '요금 미등록'; }
   function conditions(row) { return row.fr ? '데이터상 무료로 등록되어 있습니다. 이용 대상 제한과 운영시간은 현장에서 확인하세요.' : row.fl && row.fl.length ? row.fl.join(' · ')+' / 그 외 시간의 무료 이용은 보장되지 않습니다.' : '무료 개방 조건이 등록되어 있지 않습니다.'; }
-  function routes(row) { return '<div class="reading-actions"><a href="https://map.naver.com/p/search/'+encodeURIComponent(row.ad || row.nm)+'">네이버지도 길찾기</a><a href="https://map.kakao.com/link/map/'+encodeURIComponent(row.nm)+','+row.la+','+row.lo+'">카카오맵 길찾기</a><a href="https://www.google.com/maps/dir/?api=1&amp;destination='+row.la+','+row.lo+'">구글맵 길찾기</a></div>'; }
+  function routes(row) { return '<div class="reading-actions"><a href="https://map.naver.com/p/search/'+encodeURIComponent(row.ad || row.nm)+'">네이버지도 길찾기</a><a href="https://map.kakao.com/link/map/'+encodeURIComponent(row.nm)+','+row.la+','+row.lo+'">카카오맵 길찾기</a><a href="https://www.google.com/maps/dir/?api=1&amp;destination='+row.la+','+row.lo+'">구글맵 길찾기</a>'+(row.tel?'<a href="tel:'+esc(row.tel)+'">전화 '+esc(row.tel)+'</a>':'<span>전화번호 미등록</span>')+'</div>'; }
   function advertisement() {
     const slot=document.querySelector('#reading-ad');
     if(!slot || !config.ad || !config.ad.client || !config.ad.slot) return;

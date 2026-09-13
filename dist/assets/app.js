@@ -48,27 +48,13 @@
 
   /* ---------- 렌더 ---------- */
 
-  /* 길찾기·전화 링크. 카드와 지도 팝업이 같은 걸 쓴다.
-     현재 창에서 연다. 전면광고(Vignette)가 클릭을 가로채도, 같은 탭 이동이면
-     광고를 닫는 순간 브라우저가 원래 이동을 이어서 수행하기 때문이다.
-     새 탭으로 열면 광고에 가로채인 탭이 사라져 목적지로 가지 못한다. */
   function actionsHTML(row, index) {
-    // 네이버는 좌표 링크 규격이 자주 바뀌어 주소 검색으로 보낸다.
-    // 이름으로 보내면 '한류월드 제4' 처럼 지자체가 줄여 신고한 이름이
-    // 검색에 안 걸려 빈 화면이 뜬다. 주소는 지번·도로명 모두 정확히 잡힌다.
-    var naver = "https://map.naver.com/p/search/" +
-      encodeURIComponent(row.ad || row.nm);
-    var google = "https://www.google.com/maps/dir/?api=1&destination=" + row.la + "," + row.lo;
-    // Same-tab HTTPS navigation lets an intervening vignette finish first.
-    // Kakao handles app opening on its destination page, not on this click.
-    var kakaoWeb = "https://map.kakao.com/link/map/" +
-      encodeURIComponent(row.nm) + "," + row.la + "," + row.lo;
-    // 카카오 계열은 브랜드 노란색(.kakao)으로 구분한다.
-    return (row.id && row.area ? '<a class="act" href="/parking/?area=' + encodeURIComponent(row.area) + '&amp;id=' + encodeURIComponent(row.id) + '">요금·무료 조건 상세</a>' : '') + '<a class="act" href="' + naver + '">네이버지도 길찾기</a>' +
-      '<a class="act" href="' + google + '">구글맵 길찾기</a>' +
-      '<a class="act kakao" href="' + kakaoWeb + '">카카오맵 길찾기</a>' +
-      (row.tel ? '<a class="act" href="tel:' + esc(row.tel) + '">전화 ' + esc(row.tel) + "</a>" : "") +
-      (index != null ? '<button type="button" class="act" data-goto="' + index + '">목록에서 보기</button>' : "");
+    if (!row.id || !row.area) return '<span>정보를 새로 불러온 뒤 상세 페이지를 확인해 주세요.</span>';
+    var detail = '/parking/?area=' + encodeURIComponent(row.area) + '&amp;id=' + encodeURIComponent(row.id);
+    return ['요금·무료 조건 상세', '네이버지도 길찾기', '구글맵 길찾기', '카카오맵 길찾기'].map(function (label) {
+      return '<a class="act" href="' + detail + '">' + label + '</a>';
+    }).join('') + (row.tel ? '<a class="act" href="' + detail + '">전화 ' + esc(row.tel) + '</a>' : '') +
+      '<span class="pop-ad">상세 페이지에서 요금 확인 후 길찾기·전화를 이용할 수 있습니다.</span>';
   }
 
   function won(n) { return Number(n).toLocaleString() + "원"; }
@@ -153,6 +139,8 @@
 
   function renderList(keepView) {
     var rows = state.rows;
+    var panel = el(".map-results");
+    if (panel && panel.hidden) { if (!keepView) fitAll(); renderMarkers(); return; }
     var box = el("#list");
     if (!box) return;
 

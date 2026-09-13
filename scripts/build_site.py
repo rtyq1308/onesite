@@ -684,7 +684,7 @@ def map_workspace(body):
           '<div class="map-zoom" aria-label="지도 확대 축소"><button id="zoom-in" aria-label="지도 확대">+</button><button id="zoom-out" aria-label="지도 축소">−</button></div>'
           '<button class="btn map-research" id="map-research">이 지도 중심에서 찾기</button>'
           '<div class="map-legend"><span>● 무료</span><span>● 요일별 무료</span><span>● 유료</span></div>'
-          '</section><section class="map-results" aria-label="주차장 목록">'
+          '</section><section class="map-results" aria-label="주차장 목록" hidden>'
           '<button class="sheet-toggle" id="sheet-toggle" aria-expanded="false" aria-controls="results-scroll">'
           '<span class="sheet-grip"></span><span>주차장 목록 <span id="sheet-action">펼치기 ↑</span></span></button>'
           '<div class="results-heading"><div><span class="map-eyebrow">PARKING AROUND YOU</span>'

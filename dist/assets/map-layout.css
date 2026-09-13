@@ -160,3 +160,6 @@
 }
 
 #compare-nearby:not([hidden]) {display:block;margin:10px 18px;text-align:center;}
+
+.map-page .map-results[hidden] {display:none;}
+.map-page .map-canvas {inset:0;}

@@ -199,11 +199,12 @@ test('feed ad waits for visibility and is requested only once across result upda
   assert.equal(t.ctx.window.adsbygoogle.length,1); assert.equal(slot.innerHTML,markup);
 });
 
-test('Kakao directions use native same-tab HTTPS navigation without an early app launch', () => {
+test('map popup actions all lead to details and remove list navigation', () => {
   const t=app('region');
-  const html=t.actionsHTML({nm:'주차장',ad:'서울',la:37.55,lo:126.97},null);
-  const link=html.match(/<a class="act kakao"[^>]*>/)[0];
-  assert.match(link,/href="https:\/\/map.kakao.com\/link\/map\//);
-  assert.doesNotMatch(link,/target=|data-app=/);
-  assert.doesNotMatch(appSource,/kakaomap:\/\/|bindKakaoApp/);
+  const html=t.actionsHTML({id:'parking1',area:'서울/중구',nm:'주차장',tel:'02-123-4567'},0);
+  const links=[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1]);
+  assert.equal(links.length,5); assert.equal(new Set(links).size,1);
+  assert.ok(links[0].startsWith('/parking/?area='));
+  assert.doesNotMatch(html,/목록에서 보기|data-goto/);
+  assert.match(html,/전화 02-123-4567/);
 });
