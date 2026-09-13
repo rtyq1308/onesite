@@ -160,10 +160,12 @@
     var box = el("#list");
     if (!box) return;
 
+    var tail = el("#list-tail");
+    if (tail) tail.innerHTML = rows.slice(3, 300).map(function (r, i) { return itemHTML(r, i + 3); }).join("");
     if (!rows.length) {
       box.innerHTML = '<p class="empty">' + (state.onlyFree ? '조건에 맞는 상시 무료 주차장이 없습니다. 전체 주차장도 확인해보세요.' : '이 주변에서 등록된 주차장을 찾지 못했습니다.') + '</p>';
     } else {
-      box.innerHTML = rows.slice(0, 300).map(function (r, i) {
+      box.innerHTML = rows.slice(0, tail ? 3 : 300).map(function (r, i) {
         return itemHTML(r, i);
       }).join("");
     }
@@ -179,25 +181,45 @@
     renderMarkers();
   }
 
-  /* 목록 중간 광고. 페이지당 한 번만 넣는다. */
+  /* Stable slot outside re-rendered results. One request per page, when visible. */
   function placeFeedAd(count) {
-    if (state.adPlaced || !CFG.ad || count < 6) return;
-    var anchor = document.querySelectorAll("#list .item")[4];
-    if (!anchor) return;
-
-    var box = document.createElement("aside");
-    box.className = "ad-slot ad-feed";
+    var box = el("#feed-ad");
+    if (!box || !CFG.ad || count < 4 || state.adPlaced) return;
+    state.adPlaced = true;
+    box.hidden = false;
     box.innerHTML = '<span class="ad-label">광고</span>' +
-      '<ins class="adsbygoogle" style="display:block;width:300px;height:250px"' +
-      ' data-ad-client="' + CFG.ad.client + '"' +
-      ' data-ad-slot="' + CFG.ad.slot + '"' +
-      '></ins>';
-    anchor.insertAdjacentElement("afterend", box);
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-      state.adPlaced = true;
-    } catch (err) {
-      box.remove();
+      '<ins class="adsbygoogle" data-manual-lazy="true" style="display:block;width:300px;height:250px"' +
+      ' data-ad-client="' + CFG.ad.client + '" data-ad-slot="' + CFG.ad.slot + '"></ins>';
+    var requested = false;
+    function requestAd() {
+      if (requested || document.hidden || !box.getBoundingClientRect().width) return;
+      requested = true;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        track("ad_slot_request", {placement:"results_after_3", version:"v1"});
+      } catch (err) { track("ad_slot_error", {placement:"results_after_3"}); }
+    }
+    if (window.IntersectionObserver) {
+      var observer = new window.IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5 && !document.hidden) {
+            requestAd();
+            if (requested) observer.disconnect();
+          }
+        });
+      }, {threshold:[0.5]});
+      observer.observe(box);
+    } else requestAd();
+    var ins = box.querySelector("ins");
+    if (window.MutationObserver) {
+      var statusObserver = new window.MutationObserver(function () {
+        var status = ins.getAttribute("data-ad-status");
+        if (status !== "filled" && status !== "unfilled") return;
+        track("ad_slot_result", {placement:"results_after_3", result:status});
+        if (status === "unfilled") box.hidden = true;
+        statusObserver.disconnect();
+      });
+      statusObserver.observe(ins, {attributes:true,attributeFilter:["data-ad-status"]});
     }
   }
 
@@ -1000,6 +1022,7 @@
     var panel = el(".map-results"), button = el("#sheet-toggle");
     if (!panel || !button) return;
     panel.classList.toggle("expanded", expanded);
+    track("results_sheet", {expanded:expanded ? 1 : 0});
     button.setAttribute("aria-expanded", String(expanded));
     el("#sheet-action").textContent = expanded ? "접기 ↓" : "펼치기 ↑";
   }
@@ -1146,7 +1169,7 @@
   /* 광고는 레이아웃이 잡힌 뒤에 요청한다. HTML 안에서 바로 push 하면
      폭이 0으로 잡혀 availableWidth=0 오류가 나고 지면이 비어버린다. */
   function pushAds() {
-    var units = document.querySelectorAll("ins.adsbygoogle:not([data-adsbygoogle-status])");
+    var units = document.querySelectorAll("ins.adsbygoogle:not([data-adsbygoogle-status]):not([data-manual-lazy])");
     Array.prototype.forEach.call(units, function (ins) {
       if (!ins.getBoundingClientRect().width) return;
       try {

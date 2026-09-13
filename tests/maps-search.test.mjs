@@ -60,7 +60,7 @@ function app(mode = 'home', fetch = async () => Response.json({ items: [] })) {
     window: { addEventListener() {}, FREEMAP: { mode, indexUrl: '/data/index.json', dataBase: '/data/' } },
     document: { querySelector: s => nodes[s] || null, createElement: () => new Element(), addEventListener() {} }
   });
-  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers, declutter, bindMapViewport};\n})();'), ctx);
+  vm.runInContext(appSource.replace(/\}\)\(\);\s*$/, 'globalThis.testAPI = {state, bindDestinationSearch, loadNearby, initMap, applyFilter, geocodeAddress, renderMarkers, declutter, bindMapViewport, placeFeedAd};\n})();'), ctx);
   return { ...ctx.testAPI, nodes, ctx };
 }
 const flush = () => new Promise(resolve => setTimeout(resolve, 20));
@@ -180,4 +180,21 @@ test('collapsed anchor reclaims stale padding and resizes map without zoom inter
   padding='0px'; tick(); assert.equal(main.style.marginTop,'');
   closed=false; padding='450px'; tick(); assert.equal(main.style.marginTop,'');
   assert.equal(resized,3);
+});
+
+test('feed ad waits for visibility and is requested only once across result updates', () => {
+  const t=app('region'); let visible;
+  t.ctx.window.FREEMAP.ad={client:'test',slot:'test'};
+  const slot=new Element(); slot.getBoundingClientRect=()=>({width:300}); slot.querySelector=()=>new Element();
+  t.nodes['#feed-ad']=slot;
+  t.ctx.window.IntersectionObserver=class {constructor(fn){visible=fn;} observe(){} disconnect(){}};
+  t.placeFeedAd(10);
+  assert.equal(t.ctx.window.adsbygoogle,undefined);
+  visible([{isIntersecting:true,intersectionRatio:0.2}]);
+  assert.equal(t.ctx.window.adsbygoogle,undefined);
+  visible([{isIntersecting:true,intersectionRatio:0.6}]);
+  assert.equal(t.ctx.window.adsbygoogle.length,1);
+  const markup=slot.innerHTML;
+  t.placeFeedAd(20); visible([{isIntersecting:true,intersectionRatio:1}]);
+  assert.equal(t.ctx.window.adsbygoogle.length,1); assert.equal(slot.innerHTML,markup);
 });

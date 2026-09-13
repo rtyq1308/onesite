@@ -692,6 +692,8 @@ def map_workspace(body):
           '<div id="results-scroll" class="results-scroll">'
           '<p class="results-context" id="results-context">지도를 확대하거나 목적지를 검색해 주세요.</p>'
           + list_block()
+          + '<aside id="feed-ad" class="ad-slot ad-feed" hidden aria-label="광고"></aside>'
+          '<div id="list-tail" class="list"></div>' 
           + '<p class="results-disclaimer">요금·운영시간은 방문 전 현장에서 확인하세요.</p></div></section>'
           '<dialog id="spot-detail" aria-label="주차장 상세 정보"></dialog>'
           '<dialog id="map-menu" aria-labelledby="menu-title"><div class="menu-heading">'
