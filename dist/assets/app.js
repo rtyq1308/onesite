@@ -307,38 +307,13 @@
         title: r.nm + " · " + label,
         icon: { content: isDot
           ? '<button class="map-dot" aria-label="' + esc(r.nm + " " + label) + '" style="background:' + DOT_COLOR[kind] + '"></button>'
-          : '<button class="pin pin-' + kind + '"><span>' + esc(label) + '</span></button>',
+          : '<button class="pin pin-' + kind + '" aria-label="' + esc(r.nm + ' ' + label + ' 요금·무료 조건 상세 보기') + '"><span>' + esc(label) + '</span></button>',
           anchor: new naver.maps.Point(isDot ? 5 : 24, isDot ? 5 : 12) }
       });
       naver.maps.Event.addListener(marker, "click", function () {
         closePopup();
-        var detail = el("#spot-detail");
-        if (detail && window.matchMedia && window.matchMedia("(max-width:760px)").matches) {
-          detail.innerHTML = '<button class="popup-close" aria-label="상세 닫기" type="button">×</button>' + popupHTML(r, item.idx);
-          state.popupOpen = true;
-          detail.showModal();
-          return;
-        }
-        state.infoWindow = new naver.maps.InfoWindow({
-          content: '<div class="naver-popup"><button class="popup-close" aria-label="상세 닫기" type="button">×</button>' + popupHTML(r, item.idx) + '</div>',
-          // 화면 가장자리에서 열리면 지도를 밀어 상세 내용이 다 보이게 한다.
-          // idle 은 state.popupOpen 으로 막혀 있어 마커가 다시 그려지지 않는다.
-          borderWidth: 0, backgroundColor: "transparent", disableAutoPan: false
-        });
-        state.popupOpen = true;
-        state.infoWindow.open(state.map, marker);
-        // 네이버 InfoWindow 안의 클릭은 document 까지 올라오지 않을 때가 있다.
-        // 위임에 기대지 말고 닫기 버튼에 직접 건다.
-        var content = state.infoWindow.getContentElement &&
-          state.infoWindow.getContentElement();
-        var closeBtn = content && content.querySelector(".popup-close");
-        if (closeBtn) {
-          closeBtn.addEventListener("click", function (ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            closePopup();
-          });
-        }
+        track('parking_detail_open', {source:'map_marker'});
+        window.location.assign('/parking/?area=' + encodeURIComponent(r.area) + '&id=' + encodeURIComponent(r.id));
       });
       state.layer.push(marker);
     });

@@ -112,7 +112,7 @@ test('address fallback uses query and validates returned coordinates', async () 
   const rows = await t.geocodeAddress('서울 도로명'); assert.equal(rows[0].lat, 37.55);
 });
 
-test('Naver marker lifecycle: filter replaces markers; popup and origin marker work (SDK mock)', async () => {
+test('Naver marker lifecycle: filter replaces markers; direct detail navigation and origin marker work (SDK mock)', async () => {
   const t = app('region', async url => url.endsWith('index.json')
     ? Response.json({ sido: [{ nm: '서울', sgg: [{ nm: '중구', c: [37.55,126.97] }] }] })
     : Response.json({ p: { f: ['nm','la','lo','fr'], d: [['주차장',37.55,126.97,1]] } }));
@@ -122,9 +122,10 @@ test('Naver marker lifecycle: filter replaces markers; popup and origin marker w
   class InfoWindow { constructor(options) {this.content=options.content;} open(map,marker) {this.marker=marker;} close() {this.marker=null;} }
   t.ctx.window.naver=t.ctx.naver={maps: {Map, Marker, LatLng, InfoWindow, Point: class {}, Position:{TOP_RIGHT:1},
     LatLngBounds: class {extend() {}}, Event:{addListener(obj,event,fn) {(obj.events ||= {})[event]=fn;},clearInstanceListeners(obj) {obj.events={};}} }};
-  t.initMap(); t.state.rows=[{nm:'무료',fr:1,la:37.55,lo:126.97},{nm:'유료',p30:1000,la:37.7,lo:127.1}];
+  const navigations=[]; t.ctx.window.location={assign:url=>navigations.push(url)};
+  t.initMap(); t.state.rows=[{nm:'무료',area:'서울/중구',id:'free-id',fr:1,la:37.55,lo:126.97},{nm:'유료',p30:1000,la:37.7,lo:127.1}];
   t.renderMarkers(); const old=t.state.layer[0]; assert.equal(t.state.layer.length,2);
-  old.events.click(); assert.match(t.state.infoWindow.content,/무료/);
+  old.events.click(); assert.equal(navigations[0],'/parking/?area='+encodeURIComponent('서울/중구')+'&id=free-id');
   t.state.rows=[]; t.renderMarkers(); assert.equal(old.map,null); assert.equal(t.state.layer.length,0);
   t.state.origin=[37.55,126.97]; await t.loadNearby('목적지');
   assert.equal(t.state.map.center.lat(),37.55); assert.equal(t.state.map.zoom,15);
@@ -140,9 +141,9 @@ test('Naver marker lifecycle: filter replaces markers; popup and origin marker w
   t.nodes['#spot-detail'] = detail;
   t.ctx.window.matchMedia = () => ({matches:true});
   t.renderMarkers(); t.state.layer[0].events.click();
-  assert.equal(detail.open,true,'mobile marker must open a top-layer detail dialog');
-  assert.match(detail.innerHTML,/주차장/);
-  assert.equal(t.state.popupOpen,true);
+  assert.equal(detail.open,undefined,'mobile marker must not open an intermediate dialog');
+  assert.equal(navigations.length,2);
+  assert.match(navigations[1],/^\/parking\/\?area=/);
 });
 
 
