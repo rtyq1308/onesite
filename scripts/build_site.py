@@ -556,9 +556,9 @@ PRIVACY_SECTIONS = [
         "제3자 광고 공급업체는 쿠키를 사용하여 이용자의 이전 방문 기록을 바탕으로 "
         "광고를 게재할 수 있습니다.",
         "구글의 광고 쿠키 사용은 "
-        '<a href="https://policies.google.com/technologies/ads" target="_blank" '
-        'rel="noopener">구글 광고 정책</a>을 따릅니다. 개인 맞춤 광고는 '
-        '<a href="https://myadcenter.google.com" target="_blank" rel="noopener">'
+        '<a href="https://policies.google.com/technologies/ads">구글 광고 정책</a>을 '
+        '따릅니다. 개인 맞춤 광고는 '
+        '<a href="https://myadcenter.google.com">'
         "구글 광고 설정</a>에서 해제할 수 있습니다.",
         "또한 방문자 수와 어떤 지역이 많이 조회되는지 파악하기 위해 구글 애널리틱스를 "
         "사용합니다. 방문 시각·페이지 주소·기기 종류·대략적인 지역 같은 통계 정보만 "
@@ -849,7 +849,7 @@ def build_region_page(sido, sigungu, rows, siblings):
     scripts = (
         MAP_SCRIPTS
         + "<script>window.FREEMAP=%s;</script>" % json.dumps(config, ensure_ascii=False)
-        + '<script src="../../assets/app.js"></script>'
+        + '<script src="../../assets/app.js?v=%s"></script>' % JS_VER
         + '<script type="application/ld+json">%s</script>' % json.dumps(breadcrumb, ensure_ascii=False)
     )
     render(os.path.join(sido, sigungu, "index.html"), title, desc,
@@ -890,7 +890,7 @@ def build_sido_page(sido, siblings, total):
     }
     scripts = ('<script>window.FREEMAP={mode:"static",kakaoKey:%s};</script>'
                % json.dumps(KAKAO_JS_KEY)
-               + '<script src="../assets/app.js"></script>'
+               + '<script src="../assets/app.js?v=%s"></script>' % JS_VER
                + '<script type="application/ld+json">%s</script>'
                % json.dumps(breadcrumb, ensure_ascii=False))
     render(os.path.join(sido, "index.html"), title, desc,
@@ -1005,7 +1005,7 @@ def build_home(index, total, total_slots, top_regions, free_total):
     scripts = (
         MAP_SCRIPTS
         + "<script>window.FREEMAP=%s;</script>" % json.dumps(config, ensure_ascii=False)
-        + '<script src="assets/app.js"></script>'
+        + '<script src="assets/app.js?v=%s"></script>' % JS_VER
         + '<script type="application/ld+json">%s</script>' % json.dumps(site_ld, ensure_ascii=False)
         + '<script type="application/ld+json">%s</script>' % json.dumps(dataset_ld, ensure_ascii=False)
         + '<script type="application/ld+json">%s</script>' % json.dumps(faq_ld(), ensure_ascii=False)

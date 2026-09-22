@@ -857,8 +857,8 @@
     return legacyCopy(url);
   }
 
-  function openPopup(url) {
-    window.open(url, "_blank", "noopener,noreferrer,width=600,height=540");
+  function openSameWindow(url) {
+    window.location.assign(url);
   }
 
   function bindShare() {
@@ -934,15 +934,15 @@
             });
             break;
           case "naver":
-            openPopup("https://blog.naver.com/openapi/share?url=" +
+            openSameWindow("https://blog.naver.com/openapi/share?url=" +
               encodeURIComponent(url) + "&title=" + encodeURIComponent(title));
             break;
           case "x":
-            openPopup("https://twitter.com/intent/tweet?url=" +
+            openSameWindow("https://twitter.com/intent/tweet?url=" +
               encodeURIComponent(url) + "&text=" + encodeURIComponent(title));
             break;
           case "facebook":
-            openPopup("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url));
+            openSameWindow("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url));
             break;
           case "instagram":
             // 인스타그램은 외부 링크를 바로 올리는 공개 주소가 없다.
@@ -953,7 +953,7 @@
               toast("인스타그램을 엽니다. 주소창의 주소를 복사해 붙여넣어 주세요");
             }).then(function () {
               setTimeout(function () {
-                window.open("https://www.instagram.com/", "_blank", "noopener");
+                window.location.assign("https://www.instagram.com/");
               }, 900);
             });
             break;

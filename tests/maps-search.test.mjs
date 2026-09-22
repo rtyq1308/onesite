@@ -209,3 +209,9 @@ test('map popup actions all lead to details and remove list navigation', () => {
   assert.doesNotMatch(html,/목록에서 보기|data-goto/);
   assert.match(html,/전화 02-123-4567/);
 });
+
+test('external share destinations replace the current page instead of opening a new tab', () => {
+  assert.doesNotMatch(appSource, /window\.open\s*\(/);
+  assert.match(appSource, /function openSameWindow\(url\)[\s\S]*window\.location\.assign\(url\)/);
+  assert.match(appSource, /window\.location\.assign\("https:\/\/www\.instagram\.com\/"\)/);
+});
