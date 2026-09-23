@@ -302,18 +302,17 @@
         ? r.fl[0].replace(" 무료개방", "").replace(" 무료", "")
         : kind === "paid" ? won(r.p30) : "유료";
       var isDot = idx >= picked.labeled.length;
+      // 마커는 진짜 <a> 링크로 만든다. 애드센스 전면 광고는 사용자가 링크를
+      // 직접 눌렀을 때만 끼어들 수 있다. location.assign 으로 이동하면 가장
+      // 많이 쓰이는 '지도 → 상세' 경로가 통째로 전면 광고 대상에서 빠진다.
+      var href = esc('/parking/?area=' + encodeURIComponent(r.area) + '&id=' + encodeURIComponent(r.id));
       var marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(r.la, r.lo), map: state.map,
         title: r.nm + " · " + label,
         icon: { content: isDot
-          ? '<button class="map-dot" aria-label="' + esc(r.nm + " " + label) + '" style="background:' + DOT_COLOR[kind] + '"></button>'
-          : '<button class="pin pin-' + kind + '" aria-label="' + esc(r.nm + ' ' + label + ' 요금·무료 조건 상세 보기') + '"><span>' + esc(label) + '</span></button>',
+          ? '<a class="map-dot" href="' + href + '" aria-label="' + esc(r.nm + " " + label) + '" style="background:' + DOT_COLOR[kind] + '"></a>'
+          : '<a class="pin pin-' + kind + '" href="' + href + '" aria-label="' + esc(r.nm + ' ' + label + ' 요금·무료 조건 상세 보기') + '"><span>' + esc(label) + '</span></a>',
           anchor: new naver.maps.Point(isDot ? 5 : 24, isDot ? 5 : 12) }
-      });
-      naver.maps.Event.addListener(marker, "click", function () {
-        closePopup();
-        track('parking_detail_open', {source:'map_marker'});
-        window.location.assign('/parking/?area=' + encodeURIComponent(r.area) + '&id=' + encodeURIComponent(r.id));
       });
       state.layer.push(marker);
     });
@@ -350,6 +349,21 @@
       if (state.browse) refreshBrowse(); else renderMarkers();
     });
     naver.maps.Event.addListener(state.map, "click", closePopup);
+
+    // 마커를 잡고 지도를 끌면 손을 뗄 때 링크가 눌린다. 드래그가 끝난 직후의
+    // 클릭은 이동으로 치지 않는다. 캡처 단계에서 막아 광고 스크립트보다 먼저 판단한다.
+    var draggedAt = 0;
+    naver.maps.Event.addListener(state.map, "drag", function () { draggedAt = Date.now(); });
+    node.addEventListener("click", function (ev) {
+      var link = ev.target.closest && ev.target.closest("a.pin, a.map-dot");
+      if (!link) return;
+      if (Date.now() - draggedAt < 350) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        return;
+      }
+      track("parking_detail_open", { source: "map_marker" });
+    }, true);
     document.addEventListener("click", function (event) {
       if (event.target.closest(".popup-close")) closePopup();
     });
