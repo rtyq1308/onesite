@@ -1121,27 +1121,35 @@ def write_support_files(urls, dates):
 
 # --------------------------------------------------------------------------
 
-def reset_dist():
-    """dist를 비운다. OneDrive/백신이 폴더 핸들을 잡고 있으면 rmtree가 실패하므로
-    몇 번 재시도하고, 그래도 안 되면 파일만 지워서 이어서 진행한다."""
-    if os.path.realpath(DIST) not in {os.path.realpath(os.path.join(ROOT, name)) for name in ("dist", ".preview")}:
-        raise RuntimeError("허용된 출력 폴더가 아닙니다.")
+# 빌드가 만들지 않고 따로 커밋해 두는 폴더. 비울 때 건드리지 않는다.
+# threads: 스레드 홍보용 지역 지도 이미지 (별도 작업이 dist/threads 에 직접 추가)
+KEEP_IN_DIST = {"threads"}
+
+
+def remove_path(path):
+    """OneDrive/백신이 핸들을 잡고 있으면 실패하므로 몇 번 재시도한다."""
     for _ in range(5):
-        if not os.path.isdir(DIST):
-            break
         try:
-            shutil.rmtree(DIST)
-            break
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            elif os.path.exists(path):
+                os.remove(path)
+            return True
         except OSError:
             time.sleep(0.7)
-    else:
-        for base, _dirs, files in os.walk(DIST):
-            for name in files:
-                try:
-                    os.remove(os.path.join(base, name))
-                except OSError:
-                    pass
-        print("경고: dist 폴더를 완전히 삭제하지 못해 파일만 덮어씁니다.")
+    return False
+
+
+def reset_dist():
+    """dist를 비운다. KEEP_IN_DIST 폴더는 남긴다.
+    지우지 못한 항목이 있으면 경고만 하고 덮어쓰며 이어서 진행한다."""
+    if os.path.realpath(DIST) not in {os.path.realpath(os.path.join(ROOT, name)) for name in ("dist", ".preview")}:
+        raise RuntimeError("허용된 출력 폴더가 아닙니다.")
+    if os.path.isdir(DIST):
+        failed = [name for name in os.listdir(DIST)
+                  if name not in KEEP_IN_DIST and not remove_path(os.path.join(DIST, name))]
+        if failed:
+            print("경고: dist 안의 %s 을(를) 지우지 못해 덮어씁니다." % ", ".join(failed))
     os.makedirs(DIST, exist_ok=True)
 
 
