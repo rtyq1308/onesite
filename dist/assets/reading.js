@@ -11,7 +11,10 @@
   function km(a,b,c,d) { const rad=Math.PI/180, x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2; return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)); }
   function fee(row) { return row.fr ? '무료로 등록' : row.p30 ? '30분 환산 '+money(row.p30) : '요금 미등록'; }
   function conditions(row) { return row.fr ? '데이터상 무료로 등록되어 있습니다. 이용 대상 제한과 운영시간은 현장에서 확인하세요.' : row.fl && row.fl.length ? row.fl.join(' · ')+' / 그 외 시간의 무료 이용은 보장되지 않습니다.' : '무료 개방 조건이 등록되어 있지 않습니다.'; }
-  function routes(row) { return '<div class="reading-actions"><a href="https://map.naver.com/p/search/'+encodeURIComponent(row.ad || row.nm)+'">네이버지도 길찾기</a><a href="https://map.kakao.com/link/map/'+encodeURIComponent(row.nm)+','+row.la+','+row.lo+'">카카오맵 길찾기</a><a href="https://www.google.com/maps/dir/?api=1&amp;destination='+row.la+','+row.lo+'">구글맵 길찾기</a>'+(row.tel?'<a href="tel:'+esc(row.tel)+'">전화 '+esc(row.tel)+'</a>':'<span>전화번호 미등록</span>')+'</div>'; }
+  // 길찾기는 사이트 안의 /go/ 를 거쳐 나간다. 바깥 주소로 바로 나가면 전면 광고가
+  // 끼어들 수 없지만, 사이트 안 이동이면 끼어들 수 있다. /go/ 는 허용된 지도 주소로만 보낸다.
+  function go(url) { return '/go/?to='+encodeURIComponent(url); }
+  function routes(row) { return '<div class="reading-actions"><a href="'+esc(go('https://map.naver.com/p/search/'+encodeURIComponent(row.ad || row.nm)))+'">네이버지도 길찾기</a><a href="'+esc(go('https://map.kakao.com/link/map/'+encodeURIComponent(row.nm)+','+row.la+','+row.lo))+'">카카오맵 길찾기</a><a href="'+esc(go('https://www.google.com/maps/dir/?api=1&destination='+row.la+','+row.lo))+'">구글맵 길찾기</a>'+(row.tel?'<a href="tel:'+esc(row.tel)+'">전화 '+esc(row.tel)+'</a>':'<span>전화번호 미등록</span>')+'</div>'; }
   function track(name, params) { try{if(typeof window.gtag==='function') window.gtag('event', name, Object.assign({page_type:config.mode},params||{}));}catch(e){} }
   function advertisement() {
     const slot=document.querySelector('#reading-ad');
@@ -47,6 +50,6 @@
     document.querySelector('#compare-sort').addEventListener('change',paint);document.querySelector('#compare-free').addEventListener('change',paint);paint();
     if(!rows.length)document.querySelector('#reading-ad').remove();
   }
-  content.addEventListener('click', function(event){const link=event.target.closest('a'); if(!link)return;const href=link.getAttribute('href')||'';if(href.startsWith('https://map.')||href.startsWith('https://www.google.com/maps/'))track('parking_route_click',{provider:href.includes('naver')?'naver':href.includes('kakao')?'kakao':'google'});});
+  content.addEventListener('click', function(event){const link=event.target.closest('a'); if(!link)return;let href=link.getAttribute('href')||'';if(href.startsWith('/go/?to='))href=decodeURIComponent(href.slice(8));if(href.startsWith('https://map.')||href.startsWith('https://www.google.com/maps/'))track('parking_route_click',{provider:href.includes('naver')?'naver':href.includes('kakao')?'kakao':'google'});});
   (config.mode==='parking'?detail():compare()).then(()=>{track('parking_reading_view');advertisement();}).catch(()=>{content.innerHTML='<p>정보를 불러오지 못했거나 유효하지 않은 주소입니다. 지도에서 주차장을 다시 선택해 주세요.</p><a href="/">지도로 돌아가기</a>';});
 })();

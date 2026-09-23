@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>길찾기로 이동 중 | 공짜맵</title>
+<style>
+body{margin:0;font:15px/1.6 system-ui,-apple-system,"Malgun Gothic",sans-serif;background:#f7f9f8;color:#20382f;display:grid;place-items:center;min-height:100vh;text-align:center}
+a{display:inline-block;margin-top:14px;padding:11px 20px;border-radius:10px;background:#16805b;color:#fff;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<main>
+<p id="msg">지도 앱으로 이동하고 있습니다…</p>
+<a id="fallback" href="/" hidden>직접 열기</a>
+</main>
+<script>
+/* 상세 페이지의 길찾기 버튼이 거쳐 가는 중간 주소.
+   사이트 안 이동으로 만들어 전면 광고가 끼어들 수 있게 하고, 곧바로 지도로 보낸다.
+   아무 주소로나 보내면 악용되므로(오픈 리다이렉트) 허용된 지도 주소만 받는다. */
+(function () {
+  var ALLOWED = [
+    /^https:\/\/map\.naver\.com\//,
+    /^https:\/\/map\.kakao\.com\//,
+    /^https:\/\/www\.google\.com\/maps\//
+  ];
+  var to = new URLSearchParams(location.search).get("to") || "";
+  var ok = ALLOWED.some(function (re) { return re.test(to); });
+  var link = document.getElementById("fallback");
+  if (!ok) {
+    document.getElementById("msg").textContent = "잘못된 길찾기 주소입니다.";
+    link.textContent = "공짜맵으로 돌아가기";
+    link.hidden = false;
+    return;
+  }
+  link.href = to;
+  link.hidden = false;
+  location.replace(to);
+})();
+</script>
+</body>
+</html>
