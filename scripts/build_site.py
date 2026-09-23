@@ -384,13 +384,16 @@ def kakao_sdk():
             'crossorigin="anonymous"></script>')
 
 
-def adsense_head():
+def adsense_head(with_script=True):
+    """with_script=False 면 계정 확인용 meta 만 남기고 광고 스크립트는 싣지 않는다."""
     if not ADSENSE_CLIENT:
         return ""
-    return ('<meta name="google-adsense-account" content="%s">'
-            '<script async crossorigin="anonymous" '
-            'src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=%s">'
-            "</script>") % (ADSENSE_CLIENT, ADSENSE_CLIENT)
+    meta = '<meta name="google-adsense-account" content="%s">' % ADSENSE_CLIENT
+    if not with_script:
+        return meta
+    return meta + ('<script async crossorigin="anonymous" '
+                   'src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=%s">'
+                   "</script>") % ADSENSE_CLIENT
 
 
 def ad_unit(kind, allowed=True):
@@ -711,7 +714,13 @@ def map_workspace(body):
 
 def render(path, title, desc, canonical, body, root, head="", scripts="", indexable=True):
     page = PAGE
-    if 'id="map"' in body:
+    # 지도 페이지(홈·지역)는 화면 한 장짜리 앱 구조라, 자동 광고가 끼워 넣는
+    # 인페이지 광고가 지도 높이를 나눠 가져 33px 까지 줄었다. 애드센스 설정은
+    # itfinancelab.com 전체(블로그 포함)에 묶여 있고 페이지 제외는 주소를 하나씩만
+    # 받아 223개 지역 페이지를 뺄 수 없다. 그래서 이 페이지들에는 광고 스크립트를
+    # 싣지 않는다. 상세·비교·시도 목록 페이지는 그대로 광고가 나간다.
+    map_page = 'id="map"' in body
+    if map_page:
         body = map_workspace(body)
         page = page.replace('<body>', '<body class="map-page">')
         head += '<link rel="stylesheet" href="%sassets/map-layout.css?v=%s">' % (root, asset_version('map-layout.css'))
@@ -719,7 +728,7 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
     for key, value in [
         ("{{TITLE}}", title), ("{{DESC}}", desc), ("{{CANONICAL}}", canonical),
         ("{{BODY}}", body), ("{{ROOT}}", root),
-        ("{{HEAD}}", analytics_tag() + clarity_tag() + adsense_head() + head),
+        ("{{HEAD}}", analytics_tag() + clarity_tag() + adsense_head(not map_page) + head),
         ("{{ROBOTS}}", robots),
         ("{{VERIFY}}", verification_tags()),
         ("{{SCRIPTS}}", kakao_sdk() + scripts), ("{{UPDATED}}", TODAY),
