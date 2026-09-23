@@ -387,12 +387,8 @@ def kakao_sdk():
 def adsense_head():
     if not ADSENSE_CLIENT:
         return ""
-    # data-overlays="bottom": 앵커 광고를 화면 아래에만 둔다.
-    # 위쪽 앵커는 모바일에서 화면 812px 중 340px 가까이 덮어 지도가 가려졌다.
-    # 애드센스 설정은 itfinancelab.com 전체(블로그·지원금 사이트 포함)에 묶여
-    # 공짜맵만 따로 끌 수 없어서, 이 사이트의 광고 코드에서만 위치를 제한한다.
     return ('<meta name="google-adsense-account" content="%s">'
-            '<script async crossorigin="anonymous" data-overlays="bottom" '
+            '<script async crossorigin="anonymous" '
             'src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=%s">'
             "</script>") % (ADSENSE_CLIENT, ADSENSE_CLIENT)
 
