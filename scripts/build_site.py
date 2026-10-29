@@ -155,10 +155,17 @@ def coords(row):
     return round(lat, 6), round(lng, 6)
 
 
+# 2026년 하반기부터 공공데이터 주소가 '전남광주통합특별시 ○○'로 바뀌어 1천여 곳이 통째로 빠졌다(10-29 확인).
+# 기존 지역 주소(URL)를 지키려고 광주의 5개 자치구는 광주광역시, 나머지 시·군은 전라남도로 둔다.
+GWANGJU_GU = {"동구", "서구", "남구", "북구", "광산구"}
+
+
 def split_region(address):
     tokens = re.split(r"\s+", address.strip())
     if not tokens:
         return None, None
+    if tokens[0] == "전남광주통합특별시":
+        tokens[0] = "광주광역시" if len(tokens) > 1 and tokens[1] in GWANGJU_GU else "전라남도"
     sido = SIDO_ALIASES.get(tokens[0])
     if not sido:
         return None, None
@@ -331,10 +338,10 @@ PAGE = """<!doctype html>
 {{BODY}}
 </main>
 <footer class="site"><div class="wrap">
-자료 출처: 공공데이터포털 「전국주차장정보표준데이터」, 서울 열린데이터광장<br>
+자료 출처: <a href="https://www.data.go.kr/data/15012896/standard.do" rel="noopener">공공데이터포털 「전국주차장정보표준데이터」</a>, <a href="https://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do" rel="noopener">서울 열린데이터광장 「서울시 공영주차장 안내 정보」</a><br>
 매월 자동으로 다시 받아 갱신합니다. 마지막 갱신 {{UPDATED}}<br>
 요금과 운영시간은 현장 사정에 따라 달라질 수 있으니 방문 전 확인하세요.<br>
-<a href="{{ROOT}}privacy/">개인정보처리방침</a>
+<a href="{{ROOT}}about/">공짜맵 소개</a> · <a href="{{ROOT}}contact/">문의</a> · <a href="{{ROOT}}privacy/">개인정보처리방침</a>
 </div></footer>
 {{SCRIPTS}}
 </body>
@@ -490,6 +497,27 @@ def faq_ld():
 # 개인정보처리방침에 공개되는 문의처. 애드센스 승인 필수 항목이다.
 CONTACT_EMAIL = env("CONTACT_EMAIL", "rtyq1308@gmail.com")
 
+# 공짜맵 공식 계정(Organization sameAs). 프로필 링크가 이 사이트로 돌아오는 계정만 넣는다.
+SAME_AS = ["https://www.threads.com/@gongjja_map"]
+# 1차 출처. 바닥글·소개·llms.txt·Dataset LD 가 같은 주소를 쓴다.
+DATA_SOURCES = [
+    ("전국주차장정보표준데이터", "행정안전부 · 공공데이터포털", "https://www.data.go.kr/data/15012896/standard.do"),
+    ("서울시 공영주차장 안내 정보", "서울 열린데이터광장", "https://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do"),
+]
+ORGANIZATION_LD = {
+    "@type": "Organization",
+    "@id": SITE_URL + "/#organization",
+    "name": SITE_NAME,
+    "url": SITE_URL + "/",
+    "logo": {"@type": "ImageObject", "url": SITE_URL + "/icon-512.png"},
+    "email": CONTACT_EMAIL,
+    "sameAs": SAME_AS,
+}
+ABOUT_DESC = ("공짜맵은 행정안전부 전국주차장정보표준데이터와 서울 열린데이터광장 자료로 전국 주차장의 "
+              "무료 여부와 30분 요금을 지도에 보여줍니다. 자료 출처와 갱신 방식을 안내합니다.")
+CONTACT_DESC = ("공짜맵 이용 문의와 주차장 정보 오류 제보 방법을 안내합니다. 주차장 이름·주소와 "
+                "실제와 다른 요금·운영시간을 이메일로 알려 주세요.")
+
 # 검색엔진 소유권 확인 메타태그. 값이 비면 태그를 넣지 않는다.
 GOOGLE_VERIFY = env("GOOGLE_SITE_VERIFICATION", "ek4vpJNgTIsiM8ANiutfJvFiyOw_L92I-BwNjx0U4CM")
 NAVER_VERIFY = env("NAVER_SITE_VERIFICATION")
@@ -643,11 +671,12 @@ def list_block():
 
 
 def stat_block(pairs):
+    # 라벨-값 짝이라 dl 로 낸다(검색엔진·AI가 '무엇 = 얼마'로 읽는다). 화면에서는 CSS 로 값이 위에 온다.
     cells = "".join(
-        '<div class="stat"><b>%s</b><span>%s</span></div>' % (e(value), e(label))
+        '<div class="stat"><dt>%s</dt><dd>%s</dd></div>' % (e(label), e(value))
         for label, value in pairs
     )
-    return '<div class="stats">%s</div>' % cells
+    return '<dl class="stats">%s</dl>' % cells
 
 
 def map_workspace(body):
@@ -705,14 +734,15 @@ def map_workspace(body):
           + '<details open><summary>지역별 주차장 찾기</summary>' + ''.join(navigation) + '</details>'
           + '<details><summary>공짜맵 공유하기</summary>' + ''.join(sharing) + '</details>'
           + '<details><summary>서비스 소개 · 이용 안내</summary>' + body + '</details>'
-          + '<p class="note">자료: 공공데이터포털 · 서울 열린데이터광장</p>'
-          '<a href="/privacy/">개인정보처리방침</a></dialog>'
+          + '<p class="note">자료: <a href="https://www.data.go.kr/data/15012896/standard.do" rel="noopener">공공데이터포털</a> · '
+          '<a href="https://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do" rel="noopener">서울 열린데이터광장</a></p>'
+          '<a href="/about/">공짜맵 소개</a> · <a href="/contact/">문의</a> · <a href="/privacy/">개인정보처리방침</a></dialog>'
           '<noscript><p>지도 검색은 자바스크립트가 필요합니다. <a href="/서울특별시/">서울 지역 목록 보기</a></p></noscript>'
           '</div>'
     )
 
 
-def render(path, title, desc, canonical, body, root, head="", scripts="", indexable=True):
+def render(path, title, desc, canonical, body, root, head="", scripts="", indexable=True, ads=True):
     page = PAGE
     # 지도 페이지(홈·지역)는 화면 한 장짜리 앱 구조라, 자동 광고가 끼워 넣는
     # 인페이지 광고가 지도 높이를 나눠 가져 33px 까지 줄었다. 애드센스 설정은
@@ -728,7 +758,7 @@ def render(path, title, desc, canonical, body, root, head="", scripts="", indexa
     for key, value in [
         ("{{TITLE}}", title), ("{{DESC}}", desc), ("{{CANONICAL}}", canonical),
         ("{{BODY}}", body), ("{{ROOT}}", root),
-        ("{{HEAD}}", analytics_tag() + clarity_tag() + adsense_head(not map_page) + head),
+        ("{{HEAD}}", analytics_tag() + clarity_tag() + adsense_head(ads and not map_page) + head),
         ("{{ROBOTS}}", robots),
         ("{{VERIFY}}", verification_tags()),
         ("{{SCRIPTS}}", kakao_sdk() + scripts), ("{{UPDATED}}", TODAY),
@@ -918,6 +948,130 @@ def build_reading_pages():
                indexable=False)
 
 
+def sido_table(index):
+    """시·도별 전체·상시 무료 수를 라벨-값 표로도 낸다(홈 그리드와 같은 숫자)."""
+    rows = "".join(
+        '<tr><th scope="row"><a href="%s/">%s</a></th><td>%s곳</td><td>%s곳</td></tr>'
+        % (e(s["nm"]), e(s["nm"]), format(s["p"], ","), format(sum(g["f"] for g in s["sgg"]), ","))
+        for s in index["sido"]
+    )
+    return ('<h2>시·도별 주차장 수</h2><div class="table-wrap"><table class="sido-table">'
+            '<caption>시·도별 전체 주차장과 상시 무료 주차장 · 마지막 갱신 %s</caption>'
+            '<thead><tr><th scope="col">시·도</th><th scope="col">전체 주차장</th><th scope="col">상시 무료</th></tr></thead>'
+            '<tbody>%s</tbody></table></div>') % (e(TODAY), rows)
+
+
+def source_list():
+    return "<ul>%s</ul>" % "".join(
+        '<li><a href="%s" rel="noopener">%s</a> — %s</li>' % (e(url), e(name), e(org))
+        for name, org, url in DATA_SOURCES)
+
+
+def build_about_page():
+    body = (
+        '<p class="crumb"><a href="../">홈</a> › 공짜맵 소개</p>'
+        + "<h1>공짜맵 소개</h1>"
+        + '<p class="lead">공짜맵은 전국 주차장의 무료 여부와 주차요금을 지도에서 바로 비교하는 '
+          "무료주차장 지도입니다. 회원가입과 앱 설치 없이 열립니다.</p>"
+        + "<h2>무엇을 보여주나요</h2>"
+        + "<p>공영·노상·노외·부설 주차장을 모아 상시 무료인 곳은 “무료”로, 요금을 받는 곳은 "
+          "30분 기준 요금으로 표시합니다. 시·도와 시·군·구별 목록, 내 주변 주차장 찾기, "
+          "목적지 주변 주차장 비교를 제공합니다.</p>"
+        + "<h2>자료는 어디서 오나요</h2>"
+        + source_list()
+        + "<p>두 자료를 매월 자동으로 다시 받아 갱신하고, 이름과 좌표가 같은 주차장은 하나로 합칩니다.</p>"
+        + "<h2>이용할 때 알아 둘 점</h2>"
+        + "<p>요금과 운영시간은 현장 사정에 따라 달라질 수 있으니 방문 전 확인하세요. "
+          '실제와 다른 정보를 발견하면 <a href="../contact/">문의</a>로 알려 주세요.</p>'
+        + "<h2>운영과 연락</h2>"
+        + ('<p>공짜맵 소식은 스레드 <a href="%s" rel="noopener">@gongjja_map</a>에서도 전합니다. '
+           '사이트 운영을 위해 광고가 표시될 수 있으며, 자세한 내용은 '
+           '<a href="../privacy/">개인정보처리방침</a>에 있습니다.</p>') % e(SAME_AS[0])
+    )
+    render("about/index.html", "공짜맵 소개 | 전국 무료주차장 지도", ABOUT_DESC,
+           SITE_URL + "/about/", body, "../")
+
+
+def build_contact_page():
+    mail = ('<p><a class="btn primary" href="mailto:%s">%s</a></p>' % (e(CONTACT_EMAIL), e(CONTACT_EMAIL))
+            if CONTACT_EMAIL else "")
+    body = (
+        '<p class="crumb"><a href="../">홈</a> › 문의</p>'
+        + "<h1>문의</h1>"
+        + '<p class="lead">공짜맵 이용 중 궁금한 점이나 주차장 정보 오류는 이메일로 알려 주세요.</p>'
+        + mail
+        + "<h2>정보 오류를 알려 주실 때</h2>"
+        + "<ul><li>주차장 이름과 주소, 또는 공짜맵 페이지 주소</li>"
+          "<li>실제와 다른 내용(요금·운영시간·무료 여부 등)</li><li>확인한 날짜</li></ul>"
+        + ('<p class="note">공짜맵의 주차장 정보는 공공데이터를 바탕으로 합니다. 원본 자료는 '
+           '<a href="%s" rel="noopener">공공데이터포털</a>에서 확인할 수 있습니다.</p>') % e(DATA_SOURCES[0][2])
+        + ('<p>공짜맵 소식은 스레드 <a href="%s" rel="noopener">@gongjja_map</a>에서도 볼 수 있습니다. '
+           '개인정보 처리는 <a href="../privacy/">개인정보처리방침</a>을 따릅니다.</p>') % e(SAME_AS[0])
+    )
+    render("contact/index.html", "문의 | 공짜맵", CONTACT_DESC, SITE_URL + "/contact/", body, "../", ads=False)
+
+
+def build_404_page(index):
+    links = "".join('<a href="/%s/">%s</a>' % (e(s["nm"]), e(s["nm"])) for s in index["sido"])
+    body = (
+        "<h1>페이지를 찾을 수 없습니다</h1>"
+        + '<p class="lead">주소가 바뀌었거나 없는 페이지입니다. 아래에서 지역을 고르거나 지도로 돌아가세요.</p>'
+        + '<p><a class="btn primary" href="/">전국 무료주차장 지도로 가기</a></p>'
+        + "<h2>시·도별 주차장</h2>"
+        + '<div class="grid">%s</div>' % links
+    )
+    # Pages 는 dist/404.html 이 있으면 없는 주소에 이 파일을 404 로 낸다. 없으면 모든 주소에 홈을 200 으로 보낸다.
+    render("404.html", "페이지를 찾을 수 없습니다 | 공짜맵", "요청한 주소의 페이지가 없습니다.",
+           SITE_URL + "/", body, "/", indexable=False, ads=False)
+
+
+def write_llms(index, total, free_total):
+    """llms.txt(요약·주요 페이지·출처)와 llms-full.txt(시·군·구별 숫자 전체)."""
+    home = SITE_URL + "/"
+    free = lambda s: sum(g["f"] for g in s["sgg"])
+    sido = "\n".join("- [%s](%s): 주차장 %s곳, 상시 무료 %s곳" % (
+        s["nm"], esc_url(home + s["nm"] + "/"), format(s["p"], ","), format(free(s), ","))
+        for s in index["sido"])
+    sources = "\n".join("- [%s](%s): %s, 매월 자동 갱신" % (name, url, org) for name, org, url in DATA_SOURCES)
+    head = ("# 공짜맵\n\n> 전국 주차장 %s곳의 무료 여부와 30분 기준 요금을 지도에서 비교하는 무료주차장 지도. "
+            "행정안전부 전국주차장정보표준데이터와 서울 열린데이터광장 자료를 매월 자동으로 갱신한다.\n\n"
+            "상시 무료 주차장은 %s곳이다(마지막 갱신 %s). 요금과 운영시간은 현장 사정에 따라 달라질 수 있어 "
+            "방문 전 확인이 필요하다.\n\n"
+            "## 주요 페이지\n\n- [전국 지도](%s): 내 주변 무료주차장 찾기, 시·도별 목록, 자주 묻는 질문\n"
+            "- [공짜맵 소개](%sabout/): 자료 출처와 갱신 방식\n- [문의](%scontact/): 정보 오류 제보\n"
+            "- [개인정보처리방침](%sprivacy/)\n\n## 시·도별 목록\n\n%s\n\n## 자료 출처\n\n%s\n"
+            % (format(total, ","), format(free_total, ","), TODAY, home, home, home, home, sido, sources))
+    with open(os.path.join(DIST, "llms.txt"), "w", encoding="utf-8", newline="\n") as fp:
+        fp.write(head + "\n## 전체 목록\n\n- [llms-full.txt](%sllms-full.txt): 시·군·구별 주차장 수 전체\n" % home)
+    lines = [head, "## 시·군·구별 주차장 수", ""]
+    for s in index["sido"]:
+        lines.append("### %s (주차장 %s곳, 상시 무료 %s곳)" % (s["nm"], format(s["p"], ","), format(free(s), ",")))
+        lines += ["- %s: 주차장 %s곳, 상시 무료 %s곳 — %s" % (
+            g["nm"], format(g["p"], ","), format(g["f"], ","), esc_url(home + s["nm"] + "/" + g["nm"] + "/"))
+            for g in s["sgg"]]
+        lines.append("")
+    with open(os.path.join(DIST, "llms-full.txt"), "w", encoding="utf-8", newline="\n") as fp:
+        fp.write("\n".join(lines))
+
+
+def inject_page_dates(dates):
+    """사이트맵 lastmod 와 같은 날짜를 페이지 WebPage LD 의 dateModified 로 넣는다(두 신호가 어긋나지 않게)."""
+    for url, day in dates.items():
+        full = os.path.join(DIST, url[len(SITE_URL):].lstrip("/"), "index.html")
+        if not os.path.isfile(full):
+            continue
+        with open(full, encoding="utf-8") as fp:
+            page = fp.read()
+        if '"#webpage"' in page or url + '#webpage"' in page:
+            continue
+        ld = {"@context": "https://schema.org", "@type": "WebPage", "@id": url + "#webpage", "url": url,
+              "dateModified": day, "inLanguage": "ko-KR", "isPartOf": {"@id": SITE_URL + "/#website"}}
+        page = page.replace("</body>", '<script type="application/ld+json">%s</script></body>'
+                            % json.dumps(ld, ensure_ascii=False), 1)
+        with open(full, "w", encoding="utf-8", newline="\n") as fp:
+            fp.write(page)
+
+
 def build_home(index, total, total_slots, top_regions, free_total):
     grid = "".join(
         '<a href="%s/">%s<small>%s곳</small></a>'
@@ -967,11 +1121,14 @@ def build_home(index, total, total_slots, top_regions, free_total):
           "회원가입과 앱 설치 없이 열리고, 휴대폰에서는 “앱 설치 바로가기”로 "
           "홈 화면에 추가해 앱처럼 쓸 수 있습니다.</p>"
         + "<h2>무료 주차장 정보는 어디서 왔나요</h2>"
-        + '<p class="note">행정안전부가 공공데이터포털에 개방한 「전국주차장정보표준데이터」에서 '
-          "요금이 무료로 등록된 주차장만 추려 매달 자동으로 갱신합니다. 노상·노외·부설 주차장이 "
+        + '<p class="note">행정안전부가 공공데이터포털에 개방한 '
+          '<a href="https://www.data.go.kr/data/15012896/standard.do" rel="noopener">「전국주차장정보표준데이터」</a>와 서울 열린데이터광장의 '
+          '<a href="https://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do" rel="noopener">「서울시 공영주차장 안내 정보」</a>를 받아 '
+          "무료 여부와 요금을 정리하고 매달 자동으로 갱신합니다. 노상·노외·부설 주차장이 "
           "모두 포함되며, 각 무료주차장의 주차면수와 운영시간을 함께 보여줍니다. 서버 없이 미리 "
           "만들어 둔 파일만 내려받는 구조라 지역을 눌러도 바로 열립니다.</p>"
         # 요약 숫자는 첫 화면을 밀어내지 않게 맨 아래에 둔다.
+        + sido_table(index)
         + stat_block([("무료주차장", format(free_total, ",") + "곳"),
                       ("전체 주차장", count_text + "곳"),
                       ("갱신일 · 매월 자동 갱신", TODAY)])
@@ -979,18 +1136,16 @@ def build_home(index, total, total_slots, top_regions, free_total):
 
     site_ld = {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": SITE_NAME,
-        "alternateName": ["공짜맵", "공짜 맵", "무료주차장 지도"],
-        "url": SITE_URL + "/",
-        "description": desc,
-        "inLanguage": "ko-KR",
-        "publisher": {
-            "@type": "Organization",
+        "@graph": [{
+            "@type": "WebSite",
+            "@id": SITE_URL + "/#website",
             "name": SITE_NAME,
+            "alternateName": ["공짜맵", "공짜 맵", "무료주차장 지도"],
             "url": SITE_URL + "/",
-            "logo": {"@type": "ImageObject", "url": SITE_URL + "/icon-512.png"},
-        },
+            "description": desc,
+            "inLanguage": "ko-KR",
+            "publisher": {"@id": SITE_URL + "/#organization"},
+        }, ORGANIZATION_LD],
     }
     dataset_ld = {
         "@context": "https://schema.org",
@@ -1003,6 +1158,8 @@ def build_home(index, total, total_slots, top_regions, free_total):
         "isAccessibleForFree": True,
         "creator": {"@type": "Organization", "name": "행정안전부"},
         "license": "https://www.kogl.or.kr/info/license.do",
+        "isBasedOn": [url for _name, _org, url in DATA_SOURCES],
+        "dateModified": TODAY,
     }
 
     config = {
@@ -1277,8 +1434,19 @@ def main():
     urls.append(SITE_URL + "/privacy/")
     hashes.append((SITE_URL + "/privacy/", content_hash([PRIVACY_SECTIONS, CONTACT_EMAIL])))
 
+    # 2026-10-29: 소개·문의·진짜 404·llms.txt (fire-your-seo-agency 점검)
+    build_about_page()
+    build_contact_page()
+    build_404_page(index)
+    write_llms(index, len(rows), free_n)
+    for path in ("about/", "contact/"):
+        urls.append(SITE_URL + "/" + path)
+        hashes.append((SITE_URL + "/" + path,
+                       content_hash([path, ABOUT_DESC, CONTACT_DESC, DATA_SOURCES, SAME_AS, CONTACT_EMAIL])))
+
     dates = resolve_lastmod(hashes)
     write_support_files(urls, dates)
+    inject_page_dates(dates)
     # RSS 는 주차장이 많은 지역부터. 네이버가 사이트맵과 별개로 받는다.
     feed_items.sort(key=lambda x: -x[0])
     write_rss([(t, l, d) for _n, t, l, d in feed_items], dates)

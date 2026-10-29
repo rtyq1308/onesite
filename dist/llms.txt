@@ -1,0 +1,41 @@
+# 공짜맵
+
+> 전국 주차장 19,046곳의 무료 여부와 30분 기준 요금을 지도에서 비교하는 무료주차장 지도. 행정안전부 전국주차장정보표준데이터와 서울 열린데이터광장 자료를 매월 자동으로 갱신한다.
+
+상시 무료 주차장은 11,883곳이다(마지막 갱신 2026-10-29). 요금과 운영시간은 현장 사정에 따라 달라질 수 있어 방문 전 확인이 필요하다.
+
+## 주요 페이지
+
+- [전국 지도](https://parking.itfinancelab.com/): 내 주변 무료주차장 찾기, 시·도별 목록, 자주 묻는 질문
+- [공짜맵 소개](https://parking.itfinancelab.com/about/): 자료 출처와 갱신 방식
+- [문의](https://parking.itfinancelab.com/contact/): 정보 오류 제보
+- [개인정보처리방침](https://parking.itfinancelab.com/privacy/)
+
+## 시·도별 목록
+
+- [서울특별시](https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/): 주차장 2,261곳, 상시 무료 83곳
+- [경기도](https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/): 주차장 2,700곳, 상시 무료 1,243곳
+- [인천광역시](https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 891곳, 상시 무료 425곳
+- [부산광역시](https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 704곳, 상시 무료 40곳
+- [대구광역시](https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 1,086곳, 상시 무료 681곳
+- [광주광역시](https://parking.itfinancelab.com/%EA%B4%91%EC%A3%BC%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 435곳, 상시 무료 181곳
+- [대전광역시](https://parking.itfinancelab.com/%EB%8C%80%EC%A0%84%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 562곳, 상시 무료 465곳
+- [울산광역시](https://parking.itfinancelab.com/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 376곳, 상시 무료 247곳
+- [세종특별자치시](https://parking.itfinancelab.com/%EC%84%B8%EC%A2%85%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EC%8B%9C/): 주차장 89곳, 상시 무료 58곳
+- [강원특별자치도](https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/): 주차장 1,391곳, 상시 무료 1,167곳
+- [충청북도](https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/): 주차장 626곳, 상시 무료 542곳
+- [충청남도](https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/): 주차장 1,057곳, 상시 무료 920곳
+- [전북특별자치도](https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/): 주차장 735곳, 상시 무료 653곳
+- [전라남도](https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/): 주차장 1,269곳, 상시 무료 1,181곳
+- [경상북도](https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/): 주차장 1,909곳, 상시 무료 1,513곳
+- [경상남도](https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/): 주차장 1,398곳, 상시 무료 1,067곳
+- [제주특별자치도](https://parking.itfinancelab.com/%EC%A0%9C%EC%A3%BC%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/): 주차장 1,557곳, 상시 무료 1,417곳
+
+## 자료 출처
+
+- [전국주차장정보표준데이터](https://www.data.go.kr/data/15012896/standard.do): 행정안전부 · 공공데이터포털, 매월 자동 갱신
+- [서울시 공영주차장 안내 정보](https://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do): 서울 열린데이터광장, 매월 자동 갱신
+
+## 전체 목록
+
+- [llms-full.txt](https://parking.itfinancelab.com/llms-full.txt): 시·군·구별 주차장 수 전체

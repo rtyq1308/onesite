@@ -1,0 +1,302 @@
+# 공짜맵
+
+> 전국 주차장 19,046곳의 무료 여부와 30분 기준 요금을 지도에서 비교하는 무료주차장 지도. 행정안전부 전국주차장정보표준데이터와 서울 열린데이터광장 자료를 매월 자동으로 갱신한다.
+
+상시 무료 주차장은 11,883곳이다(마지막 갱신 2026-10-29). 요금과 운영시간은 현장 사정에 따라 달라질 수 있어 방문 전 확인이 필요하다.
+
+## 주요 페이지
+
+- [전국 지도](https://parking.itfinancelab.com/): 내 주변 무료주차장 찾기, 시·도별 목록, 자주 묻는 질문
+- [공짜맵 소개](https://parking.itfinancelab.com/about/): 자료 출처와 갱신 방식
+- [문의](https://parking.itfinancelab.com/contact/): 정보 오류 제보
+- [개인정보처리방침](https://parking.itfinancelab.com/privacy/)
+
+## 시·도별 목록
+
+- [서울특별시](https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/): 주차장 2,261곳, 상시 무료 83곳
+- [경기도](https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/): 주차장 2,700곳, 상시 무료 1,243곳
+- [인천광역시](https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 891곳, 상시 무료 425곳
+- [부산광역시](https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 704곳, 상시 무료 40곳
+- [대구광역시](https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 1,086곳, 상시 무료 681곳
+- [광주광역시](https://parking.itfinancelab.com/%EA%B4%91%EC%A3%BC%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 435곳, 상시 무료 181곳
+- [대전광역시](https://parking.itfinancelab.com/%EB%8C%80%EC%A0%84%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 562곳, 상시 무료 465곳
+- [울산광역시](https://parking.itfinancelab.com/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/): 주차장 376곳, 상시 무료 247곳
+- [세종특별자치시](https://parking.itfinancelab.com/%EC%84%B8%EC%A2%85%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EC%8B%9C/): 주차장 89곳, 상시 무료 58곳
+- [강원특별자치도](https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/): 주차장 1,391곳, 상시 무료 1,167곳
+- [충청북도](https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/): 주차장 626곳, 상시 무료 542곳
+- [충청남도](https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/): 주차장 1,057곳, 상시 무료 920곳
+- [전북특별자치도](https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/): 주차장 735곳, 상시 무료 653곳
+- [전라남도](https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/): 주차장 1,269곳, 상시 무료 1,181곳
+- [경상북도](https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/): 주차장 1,909곳, 상시 무료 1,513곳
+- [경상남도](https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/): 주차장 1,398곳, 상시 무료 1,067곳
+- [제주특별자치도](https://parking.itfinancelab.com/%EC%A0%9C%EC%A3%BC%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/): 주차장 1,557곳, 상시 무료 1,417곳
+
+## 자료 출처
+
+- [전국주차장정보표준데이터](https://www.data.go.kr/data/15012896/standard.do): 행정안전부 · 공공데이터포털, 매월 자동 갱신
+- [서울시 공영주차장 안내 정보](https://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do): 서울 열린데이터광장, 매월 자동 갱신
+
+## 시·군·구별 주차장 수
+
+### 서울특별시 (주차장 2,261곳, 상시 무료 83곳)
+- 강남구: 주차장 164곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EA%B0%95%EB%82%A8%EA%B5%AC/
+- 강동구: 주차장 26곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EA%B0%95%EB%8F%99%EA%B5%AC/
+- 강북구: 주차장 52곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EA%B0%95%EB%B6%81%EA%B5%AC/
+- 강서구: 주차장 45곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EA%B0%95%EC%84%9C%EA%B5%AC/
+- 관악구: 주차장 113곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EA%B4%80%EC%95%85%EA%B5%AC/
+- 광진구: 주차장 12곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EA%B4%91%EC%A7%84%EA%B5%AC/
+- 구로구: 주차장 158곳, 상시 무료 4곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EA%B5%AC%EB%A1%9C%EA%B5%AC/
+- 금천구: 주차장 109곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EA%B8%88%EC%B2%9C%EA%B5%AC/
+- 노원구: 주차장 49곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EB%85%B8%EC%9B%90%EA%B5%AC/
+- 도봉구: 주차장 47곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EB%8F%84%EB%B4%89%EA%B5%AC/
+- 동대문구: 주차장 63곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EB%8F%99%EB%8C%80%EB%AC%B8%EA%B5%AC/
+- 동작구: 주차장 65곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EB%8F%99%EC%9E%91%EA%B5%AC/
+- 마포구: 주차장 31곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EB%A7%88%ED%8F%AC%EA%B5%AC/
+- 서대문구: 주차장 32곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%84%9C%EB%8C%80%EB%AC%B8%EA%B5%AC/
+- 서초구: 주차장 41곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%84%9C%EC%B4%88%EA%B5%AC/
+- 성동구: 주차장 100곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%84%B1%EB%8F%99%EA%B5%AC/
+- 성북구: 주차장 12곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%84%B1%EB%B6%81%EA%B5%AC/
+- 송파구: 주차장 56곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%86%A1%ED%8C%8C%EA%B5%AC/
+- 양천구: 주차장 63곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%96%91%EC%B2%9C%EA%B5%AC/
+- 영등포구: 주차장 241곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%98%81%EB%93%B1%ED%8F%AC%EA%B5%AC/
+- 용산구: 주차장 33곳, 상시 무료 6곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%9A%A9%EC%82%B0%EA%B5%AC/
+- 은평구: 주차장 29곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%9D%80%ED%8F%89%EA%B5%AC/
+- 종로구: 주차장 204곳, 상시 무료 9곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%A2%85%EB%A1%9C%EA%B5%AC/
+- 중구: 주차장 490곳, 상시 무료 62곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%A4%91%EA%B5%AC/
+- 중랑구: 주차장 26곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EC%A4%91%EB%9E%91%EA%B5%AC/
+
+### 경기도 (주차장 2,700곳, 상시 무료 1,243곳)
+- 가평군: 주차장 49곳, 상시 무료 25곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EA%B0%80%ED%8F%89%EA%B5%B0/
+- 고양시: 주차장 88곳, 상시 무료 23곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EA%B3%A0%EC%96%91%EC%8B%9C/
+- 과천시: 주차장 101곳, 상시 무료 55곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EA%B3%BC%EC%B2%9C%EC%8B%9C/
+- 광명시: 주차장 28곳, 상시 무료 2곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EA%B4%91%EB%AA%85%EC%8B%9C/
+- 광주시: 주차장 55곳, 상시 무료 43곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EA%B4%91%EC%A3%BC%EC%8B%9C/
+- 구리시: 주차장 15곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EA%B5%AC%EB%A6%AC%EC%8B%9C/
+- 군포시: 주차장 80곳, 상시 무료 36곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EA%B5%B0%ED%8F%AC%EC%8B%9C/
+- 김포시: 주차장 50곳, 상시 무료 2곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EA%B9%80%ED%8F%AC%EC%8B%9C/
+- 남양주시: 주차장 84곳, 상시 무료 36곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EB%82%A8%EC%96%91%EC%A3%BC%EC%8B%9C/
+- 동두천시: 주차장 63곳, 상시 무료 51곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EB%8F%99%EB%91%90%EC%B2%9C%EC%8B%9C/
+- 부천시: 주차장 109곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EB%B6%80%EC%B2%9C%EC%8B%9C/
+- 성남시: 주차장 165곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%84%B1%EB%82%A8%EC%8B%9C/
+- 수원시: 주차장 59곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%88%98%EC%9B%90%EC%8B%9C/
+- 시흥시: 주차장 199곳, 상시 무료 106곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%8B%9C%ED%9D%A5%EC%8B%9C/
+- 안산시: 주차장 223곳, 상시 무료 101곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%95%88%EC%82%B0%EC%8B%9C/
+- 안성시: 주차장 52곳, 상시 무료 44곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%95%88%EC%84%B1%EC%8B%9C/
+- 안양시: 주차장 107곳, 상시 무료 36곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%95%88%EC%96%91%EC%8B%9C/
+- 양주시: 주차장 89곳, 상시 무료 31곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%96%91%EC%A3%BC%EC%8B%9C/
+- 양평군: 주차장 51곳, 상시 무료 46곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%96%91%ED%8F%89%EA%B5%B0/
+- 여주시: 주차장 40곳, 상시 무료 17곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%97%AC%EC%A3%BC%EC%8B%9C/
+- 연천군: 주차장 10곳, 상시 무료 8곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%97%B0%EC%B2%9C%EA%B5%B0/
+- 오산시: 주차장 46곳, 상시 무료 26곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%98%A4%EC%82%B0%EC%8B%9C/
+- 용인시: 주차장 212곳, 상시 무료 165곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%9A%A9%EC%9D%B8%EC%8B%9C/
+- 의왕시: 주차장 55곳, 상시 무료 33곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%9D%98%EC%99%95%EC%8B%9C/
+- 의정부시: 주차장 72곳, 상시 무료 27곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%9D%98%EC%A0%95%EB%B6%80%EC%8B%9C/
+- 이천시: 주차장 109곳, 상시 무료 35곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%9D%B4%EC%B2%9C%EC%8B%9C/
+- 파주시: 주차장 87곳, 상시 무료 64곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%ED%8C%8C%EC%A3%BC%EC%8B%9C/
+- 평택시: 주차장 160곳, 상시 무료 109곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%ED%8F%89%ED%83%9D%EC%8B%9C/
+- 포천시: 주차장 82곳, 상시 무료 68곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%ED%8F%AC%EC%B2%9C%EC%8B%9C/
+- 하남시: 주차장 35곳, 상시 무료 5곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%ED%95%98%EB%82%A8%EC%8B%9C/
+- 화성시: 주차장 125곳, 상시 무료 48곳 — https://parking.itfinancelab.com/%EA%B2%BD%EA%B8%B0%EB%8F%84/%ED%99%94%EC%84%B1%EC%8B%9C/
+
+### 인천광역시 (주차장 891곳, 상시 무료 425곳)
+- 강화군: 주차장 59곳, 상시 무료 40곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EA%B0%95%ED%99%94%EA%B5%B0/
+- 계양구: 주차장 72곳, 상시 무료 17곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EA%B3%84%EC%96%91%EA%B5%AC/
+- 남동구: 주차장 138곳, 상시 무료 44곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%82%A8%EB%8F%99%EA%B5%AC/
+- 동구: 주차장 35곳, 상시 무료 32곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8F%99%EA%B5%AC/
+- 미추홀구: 주차장 164곳, 상시 무료 29곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%AF%B8%EC%B6%94%ED%99%80%EA%B5%AC/
+- 부평구: 주차장 85곳, 상시 무료 29곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%B6%80%ED%8F%89%EA%B5%AC/
+- 서구: 주차장 26곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%84%9C%EA%B5%AC/
+- 서해구: 주차장 2곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%84%9C%ED%95%B4%EA%B5%AC/
+- 연수구: 주차장 77곳, 상시 무료 45곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%97%B0%EC%88%98%EA%B5%AC/
+- 영종구: 주차장 2곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%98%81%EC%A2%85%EA%B5%AC/
+- 옹진군: 주차장 48곳, 상시 무료 42곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%98%B9%EC%A7%84%EA%B5%B0/
+- 제물포구: 주차장 4곳, 상시 무료 2곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%A0%9C%EB%AC%BC%ED%8F%AC%EA%B5%AC/
+- 중구: 주차장 179곳, 상시 무료 145곳 — https://parking.itfinancelab.com/%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%A4%91%EA%B5%AC/
+
+### 부산광역시 (주차장 704곳, 상시 무료 40곳)
+- 강서구: 주차장 95곳, 상시 무료 8곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EA%B0%95%EC%84%9C%EA%B5%AC/
+- 금정구: 주차장 28곳, 상시 무료 4곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EA%B8%88%EC%A0%95%EA%B5%AC/
+- 기장군: 주차장 50곳, 상시 무료 21곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EA%B8%B0%EC%9E%A5%EA%B5%B0/
+- 남구: 주차장 78곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%82%A8%EA%B5%AC/
+- 동구: 주차장 59곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8F%99%EA%B5%AC/
+- 동래구: 주차장 12곳, 상시 무료 3곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8F%99%EB%9E%98%EA%B5%AC/
+- 부산진구: 주차장 9곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%B6%80%EC%82%B0%EC%A7%84%EA%B5%AC/
+- 북구: 주차장 28곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%B6%81%EA%B5%AC/
+- 사상구: 주차장 32곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%82%AC%EC%83%81%EA%B5%AC/
+- 사하구: 주차장 32곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%82%AC%ED%95%98%EA%B5%AC/
+- 서구: 주차장 43곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%84%9C%EA%B5%AC/
+- 수영구: 주차장 7곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%88%98%EC%98%81%EA%B5%AC/
+- 연제구: 주차장 14곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%97%B0%EC%A0%9C%EA%B5%AC/
+- 영도구: 주차장 31곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%98%81%EB%8F%84%EA%B5%AC/
+- 중구: 주차장 26곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%A4%91%EA%B5%AC/
+- 해운대구: 주차장 160곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%B6%80%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%ED%95%B4%EC%9A%B4%EB%8C%80%EA%B5%AC/
+
+### 대구광역시 (주차장 1,086곳, 상시 무료 681곳)
+- 군위군: 주차장 61곳, 상시 무료 61곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EA%B5%B0%EC%9C%84%EA%B5%B0/
+- 남구: 주차장 40곳, 상시 무료 14곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%82%A8%EA%B5%AC/
+- 달서구: 주차장 121곳, 상시 무료 95곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8B%AC%EC%84%9C%EA%B5%AC/
+- 달성군: 주차장 233곳, 상시 무료 233곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8B%AC%EC%84%B1%EA%B5%B0/
+- 동구: 주차장 59곳, 상시 무료 7곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8F%99%EA%B5%AC/
+- 북구: 주차장 295곳, 상시 무료 188곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%B6%81%EA%B5%AC/
+- 서구: 주차장 85곳, 상시 무료 61곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%84%9C%EA%B5%AC/
+- 수성구: 주차장 41곳, 상시 무료 22곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%88%98%EC%84%B1%EA%B5%AC/
+- 중구: 주차장 151곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EB%8C%80%EA%B5%AC%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%A4%91%EA%B5%AC/
+
+### 광주광역시 (주차장 435곳, 상시 무료 181곳)
+- 광산구: 주차장 63곳, 상시 무료 36곳 — https://parking.itfinancelab.com/%EA%B4%91%EC%A3%BC%EA%B4%91%EC%97%AD%EC%8B%9C/%EA%B4%91%EC%82%B0%EA%B5%AC/
+- 남구: 주차장 27곳, 상시 무료 24곳 — https://parking.itfinancelab.com/%EA%B4%91%EC%A3%BC%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%82%A8%EA%B5%AC/
+- 동구: 주차장 193곳, 상시 무료 2곳 — https://parking.itfinancelab.com/%EA%B4%91%EC%A3%BC%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8F%99%EA%B5%AC/
+- 북구: 주차장 85곳, 상시 무료 64곳 — https://parking.itfinancelab.com/%EA%B4%91%EC%A3%BC%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%B6%81%EA%B5%AC/
+- 서구: 주차장 67곳, 상시 무료 55곳 — https://parking.itfinancelab.com/%EA%B4%91%EC%A3%BC%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%84%9C%EA%B5%AC/
+
+### 대전광역시 (주차장 562곳, 상시 무료 465곳)
+- 대덕구: 주차장 27곳, 상시 무료 12곳 — https://parking.itfinancelab.com/%EB%8C%80%EC%A0%84%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8C%80%EB%8D%95%EA%B5%AC/
+- 동구: 주차장 96곳, 상시 무료 82곳 — https://parking.itfinancelab.com/%EB%8C%80%EC%A0%84%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8F%99%EA%B5%AC/
+- 서구: 주차장 115곳, 상시 무료 87곳 — https://parking.itfinancelab.com/%EB%8C%80%EC%A0%84%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%84%9C%EA%B5%AC/
+- 유성구: 주차장 139곳, 상시 무료 129곳 — https://parking.itfinancelab.com/%EB%8C%80%EC%A0%84%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%9C%A0%EC%84%B1%EA%B5%AC/
+- 중구: 주차장 185곳, 상시 무료 155곳 — https://parking.itfinancelab.com/%EB%8C%80%EC%A0%84%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%A4%91%EA%B5%AC/
+
+### 울산광역시 (주차장 376곳, 상시 무료 247곳)
+- 남구: 주차장 60곳, 상시 무료 9곳 — https://parking.itfinancelab.com/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%82%A8%EA%B5%AC/
+- 동구: 주차장 114곳, 상시 무료 94곳 — https://parking.itfinancelab.com/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%8F%99%EA%B5%AC/
+- 북구: 주차장 114곳, 상시 무료 103곳 — https://parking.itfinancelab.com/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EB%B6%81%EA%B5%AC/
+- 울주군: 주차장 57곳, 상시 무료 41곳 — https://parking.itfinancelab.com/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%9A%B8%EC%A3%BC%EA%B5%B0/
+- 중구: 주차장 31곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C/%EC%A4%91%EA%B5%AC/
+
+### 세종특별자치시 (주차장 89곳, 상시 무료 58곳)
+- 세종특별자치시: 주차장 89곳, 상시 무료 58곳 — https://parking.itfinancelab.com/%EC%84%B8%EC%A2%85%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EC%8B%9C/%EC%84%B8%EC%A2%85%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EC%8B%9C/
+
+### 강원특별자치도 (주차장 1,391곳, 상시 무료 1,167곳)
+- 강릉시: 주차장 166곳, 상시 무료 149곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EA%B0%95%EB%A6%89%EC%8B%9C/
+- 고성군: 주차장 104곳, 상시 무료 104곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EA%B3%A0%EC%84%B1%EA%B5%B0/
+- 동해시: 주차장 24곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EB%8F%99%ED%95%B4%EC%8B%9C/
+- 삼척시: 주차장 13곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%82%BC%EC%B2%99%EC%8B%9C/
+- 속초시: 주차장 24곳, 상시 무료 22곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%86%8D%EC%B4%88%EC%8B%9C/
+- 양구군: 주차장 53곳, 상시 무료 21곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%96%91%EA%B5%AC%EA%B5%B0/
+- 양양군: 주차장 103곳, 상시 무료 99곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%96%91%EC%96%91%EA%B5%B0/
+- 영월군: 주차장 153곳, 상시 무료 151곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%98%81%EC%9B%94%EA%B5%B0/
+- 원주시: 주차장 118곳, 상시 무료 58곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%9B%90%EC%A3%BC%EC%8B%9C/
+- 인제군: 주차장 32곳, 상시 무료 32곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%9D%B8%EC%A0%9C%EA%B5%B0/
+- 정선군: 주차장 57곳, 상시 무료 42곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%A0%95%EC%84%A0%EA%B5%B0/
+- 철원군: 주차장 42곳, 상시 무료 40곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%B2%A0%EC%9B%90%EA%B5%B0/
+- 춘천시: 주차장 89곳, 상시 무료 80곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%B6%98%EC%B2%9C%EC%8B%9C/
+- 태백시: 주차장 68곳, 상시 무료 56곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%ED%83%9C%EB%B0%B1%EC%8B%9C/
+- 평창군: 주차장 179곳, 상시 무료 178곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%ED%8F%89%EC%B0%BD%EA%B5%B0/
+- 홍천군: 주차장 65곳, 상시 무료 53곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%ED%99%8D%EC%B2%9C%EA%B5%B0/
+- 화천군: 주차장 38곳, 상시 무료 30곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%ED%99%94%EC%B2%9C%EA%B5%B0/
+- 횡성군: 주차장 63곳, 상시 무료 50곳 — https://parking.itfinancelab.com/%EA%B0%95%EC%9B%90%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%ED%9A%A1%EC%84%B1%EA%B5%B0/
+
+### 충청북도 (주차장 626곳, 상시 무료 542곳)
+- 단양군: 주차장 29곳, 상시 무료 27곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EB%8B%A8%EC%96%91%EA%B5%B0/
+- 보은군: 주차장 22곳, 상시 무료 22곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EB%B3%B4%EC%9D%80%EA%B5%B0/
+- 영동군: 주차장 85곳, 상시 무료 84곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EC%98%81%EB%8F%99%EA%B5%B0/
+- 옥천군: 주차장 21곳, 상시 무료 16곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EC%98%A5%EC%B2%9C%EA%B5%B0/
+- 음성군: 주차장 29곳, 상시 무료 28곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EC%9D%8C%EC%84%B1%EA%B5%B0/
+- 제천시: 주차장 22곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EC%A0%9C%EC%B2%9C%EC%8B%9C/
+- 증평군: 주차장 35곳, 상시 무료 26곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EC%A6%9D%ED%8F%89%EA%B5%B0/
+- 진천군: 주차장 16곳, 상시 무료 16곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EC%A7%84%EC%B2%9C%EA%B5%B0/
+- 청주시: 주차장 367곳, 상시 무료 323곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%B6%81%EB%8F%84/%EC%B2%AD%EC%A3%BC%EC%8B%9C/
+
+### 충청남도 (주차장 1,057곳, 상시 무료 920곳)
+- 계룡시: 주차장 22곳, 상시 무료 20곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EA%B3%84%EB%A3%A1%EC%8B%9C/
+- 공주시: 주차장 180곳, 상시 무료 170곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EA%B3%B5%EC%A3%BC%EC%8B%9C/
+- 금산군: 주차장 36곳, 상시 무료 33곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EA%B8%88%EC%82%B0%EA%B5%B0/
+- 논산시: 주차장 128곳, 상시 무료 123곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EB%85%BC%EC%82%B0%EC%8B%9C/
+- 당진시: 주차장 10곳, 상시 무료 4곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EB%8B%B9%EC%A7%84%EC%8B%9C/
+- 보령시: 주차장 53곳, 상시 무료 45곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EB%B3%B4%EB%A0%B9%EC%8B%9C/
+- 부여군: 주차장 72곳, 상시 무료 67곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EB%B6%80%EC%97%AC%EA%B5%B0/
+- 서산시: 주차장 223곳, 상시 무료 214곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EC%84%9C%EC%82%B0%EC%8B%9C/
+- 서천군: 주차장 28곳, 상시 무료 28곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EC%84%9C%EC%B2%9C%EA%B5%B0/
+- 아산시: 주차장 71곳, 상시 무료 49곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EC%95%84%EC%82%B0%EC%8B%9C/
+- 천안시: 주차장 106곳, 상시 무료 85곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EC%B2%9C%EC%95%88%EC%8B%9C/
+- 청양군: 주차장 25곳, 상시 무료 23곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EC%B2%AD%EC%96%91%EA%B5%B0/
+- 태안군: 주차장 36곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%ED%83%9C%EC%95%88%EA%B5%B0/
+- 홍성군: 주차장 67곳, 상시 무료 59곳 — https://parking.itfinancelab.com/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%ED%99%8D%EC%84%B1%EA%B5%B0/
+
+### 전북특별자치도 (주차장 735곳, 상시 무료 653곳)
+- 고창군: 주차장 37곳, 상시 무료 36곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EA%B3%A0%EC%B0%BD%EA%B5%B0/
+- 군산시: 주차장 174곳, 상시 무료 172곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EA%B5%B0%EC%82%B0%EC%8B%9C/
+- 김제시: 주차장 36곳, 상시 무료 35곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EA%B9%80%EC%A0%9C%EC%8B%9C/
+- 남원시: 주차장 56곳, 상시 무료 51곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EB%82%A8%EC%9B%90%EC%8B%9C/
+- 무주군: 주차장 40곳, 상시 무료 39곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EB%AC%B4%EC%A3%BC%EA%B5%B0/
+- 부안군: 주차장 37곳, 상시 무료 33곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EB%B6%80%EC%95%88%EA%B5%B0/
+- 순창군: 주차장 36곳, 상시 무료 36곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%88%9C%EC%B0%BD%EA%B5%B0/
+- 완주군: 주차장 37곳, 상시 무료 35곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%99%84%EC%A3%BC%EA%B5%B0/
+- 익산시: 주차장 53곳, 상시 무료 41곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%9D%B5%EC%82%B0%EC%8B%9C/
+- 임실군: 주차장 47곳, 상시 무료 47곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%9E%84%EC%8B%A4%EA%B5%B0/
+- 장수군: 주차장 31곳, 상시 무료 31곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%9E%A5%EC%88%98%EA%B5%B0/
+- 전주시: 주차장 117곳, 상시 무료 71곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%A0%84%EC%A3%BC%EC%8B%9C/
+- 정읍시: 주차장 24곳, 상시 무료 16곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%A0%95%EC%9D%8D%EC%8B%9C/
+- 진안군: 주차장 10곳, 상시 무료 10곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%B6%81%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%A7%84%EC%95%88%EA%B5%B0/
+
+### 전라남도 (주차장 1,269곳, 상시 무료 1,181곳)
+- 강진군: 주차장 8곳, 상시 무료 6곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EA%B0%95%EC%A7%84%EA%B5%B0/
+- 고흥군: 주차장 33곳, 상시 무료 33곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EA%B3%A0%ED%9D%A5%EA%B5%B0/
+- 곡성군: 주차장 148곳, 상시 무료 147곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EA%B3%A1%EC%84%B1%EA%B5%B0/
+- 광양시: 주차장 339곳, 상시 무료 337곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EA%B4%91%EC%96%91%EC%8B%9C/
+- 구례군: 주차장 33곳, 상시 무료 32곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EA%B5%AC%EB%A1%80%EA%B5%B0/
+- 나주시: 주차장 84곳, 상시 무료 84곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EB%82%98%EC%A3%BC%EC%8B%9C/
+- 담양군: 주차장 52곳, 상시 무료 52곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EB%8B%B4%EC%96%91%EA%B5%B0/
+- 목포시: 주차장 60곳, 상시 무료 51곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EB%AA%A9%ED%8F%AC%EC%8B%9C/
+- 무안군: 주차장 3곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EB%AC%B4%EC%95%88%EA%B5%B0/
+- 보성군: 주차장 72곳, 상시 무료 71곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EB%B3%B4%EC%84%B1%EA%B5%B0/
+- 순천시: 주차장 26곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%88%9C%EC%B2%9C%EC%8B%9C/
+- 신안군: 주차장 7곳, 상시 무료 7곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%8B%A0%EC%95%88%EA%B5%B0/
+- 여수시: 주차장 37곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%97%AC%EC%88%98%EC%8B%9C/
+- 영광군: 주차장 63곳, 상시 무료 61곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%98%81%EA%B4%91%EA%B5%B0/
+- 영암군: 주차장 49곳, 상시 무료 49곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%98%81%EC%95%94%EA%B5%B0/
+- 완도군: 주차장 33곳, 상시 무료 33곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%99%84%EB%8F%84%EA%B5%B0/
+- 장성군: 주차장 70곳, 상시 무료 70곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%9E%A5%EC%84%B1%EA%B5%B0/
+- 장흥군: 주차장 13곳, 상시 무료 13곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%9E%A5%ED%9D%A5%EA%B5%B0/
+- 진도군: 주차장 70곳, 상시 무료 67곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%EC%A7%84%EB%8F%84%EA%B5%B0/
+- 함평군: 주차장 12곳, 상시 무료 11곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%ED%95%A8%ED%8F%89%EA%B5%B0/
+- 해남군: 주차장 47곳, 상시 무료 47곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%ED%95%B4%EB%82%A8%EA%B5%B0/
+- 화순군: 주차장 10곳, 상시 무료 10곳 — https://parking.itfinancelab.com/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84/%ED%99%94%EC%88%9C%EA%B5%B0/
+
+### 경상북도 (주차장 1,909곳, 상시 무료 1,513곳)
+- 경산시: 주차장 183곳, 상시 무료 176곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EA%B2%BD%EC%82%B0%EC%8B%9C/
+- 경주시: 주차장 174곳, 상시 무료 106곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EA%B2%BD%EC%A3%BC%EC%8B%9C/
+- 고령군: 주차장 40곳, 상시 무료 39곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EA%B3%A0%EB%A0%B9%EA%B5%B0/
+- 구미시: 주차장 243곳, 상시 무료 188곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EA%B5%AC%EB%AF%B8%EC%8B%9C/
+- 김천시: 주차장 29곳, 상시 무료 22곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EA%B9%80%EC%B2%9C%EC%8B%9C/
+- 문경시: 주차장 59곳, 상시 무료 34곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EB%AC%B8%EA%B2%BD%EC%8B%9C/
+- 봉화군: 주차장 52곳, 상시 무료 52곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EB%B4%89%ED%99%94%EA%B5%B0/
+- 상주시: 주차장 26곳, 상시 무료 24곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%83%81%EC%A3%BC%EC%8B%9C/
+- 성주군: 주차장 20곳, 상시 무료 17곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%84%B1%EC%A3%BC%EA%B5%B0/
+- 안동시: 주차장 132곳, 상시 무료 96곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%95%88%EB%8F%99%EC%8B%9C/
+- 영덕군: 주차장 6곳, 상시 무료 6곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%98%81%EB%8D%95%EA%B5%B0/
+- 영양군: 주차장 25곳, 상시 무료 25곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%98%81%EC%96%91%EA%B5%B0/
+- 영주시: 주차장 94곳, 상시 무료 82곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%98%81%EC%A3%BC%EC%8B%9C/
+- 영천시: 주차장 119곳, 상시 무료 114곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%98%81%EC%B2%9C%EC%8B%9C/
+- 예천군: 주차장 20곳, 상시 무료 13곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%98%88%EC%B2%9C%EA%B5%B0/
+- 울릉군: 주차장 4곳, 상시 무료 1곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%9A%B8%EB%A6%89%EA%B5%B0/
+- 울진군: 주차장 62곳, 상시 무료 61곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%9A%B8%EC%A7%84%EA%B5%B0/
+- 의성군: 주차장 59곳, 상시 무료 54곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%9D%98%EC%84%B1%EA%B5%B0/
+- 청도군: 주차장 38곳, 상시 무료 37곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%B2%AD%EB%8F%84%EA%B5%B0/
+- 청송군: 주차장 28곳, 상시 무료 21곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%B2%AD%EC%86%A1%EA%B5%B0/
+- 칠곡군: 주차장 69곳, 상시 무료 66곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%EC%B9%A0%EA%B3%A1%EA%B5%B0/
+- 포항시: 주차장 427곳, 상시 무료 279곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%B6%81%EB%8F%84/%ED%8F%AC%ED%95%AD%EC%8B%9C/
+
+### 경상남도 (주차장 1,398곳, 상시 무료 1,067곳)
+- 거제시: 주차장 39곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EA%B1%B0%EC%A0%9C%EC%8B%9C/
+- 거창군: 주차장 74곳, 상시 무료 66곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EA%B1%B0%EC%B0%BD%EA%B5%B0/
+- 고성군: 주차장 13곳, 상시 무료 3곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EA%B3%A0%EC%84%B1%EA%B5%B0/
+- 김해시: 주차장 102곳, 상시 무료 69곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EA%B9%80%ED%95%B4%EC%8B%9C/
+- 남해군: 주차장 62곳, 상시 무료 57곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EB%82%A8%ED%95%B4%EA%B5%B0/
+- 밀양시: 주차장 28곳, 상시 무료 16곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EB%B0%80%EC%96%91%EC%8B%9C/
+- 사천시: 주차장 9곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EC%82%AC%EC%B2%9C%EC%8B%9C/
+- 산청군: 주차장 233곳, 상시 무료 233곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EC%82%B0%EC%B2%AD%EA%B5%B0/
+- 양산시: 주차장 102곳, 상시 무료 86곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EC%96%91%EC%82%B0%EC%8B%9C/
+- 의령군: 주차장 96곳, 상시 무료 96곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EC%9D%98%EB%A0%B9%EA%B5%B0/
+- 진주시: 주차장 60곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EC%A7%84%EC%A3%BC%EC%8B%9C/
+- 창녕군: 주차장 113곳, 상시 무료 113곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EC%B0%BD%EB%85%95%EA%B5%B0/
+- 창원시: 주차장 90곳, 상시 무료 0곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%EC%B0%BD%EC%9B%90%EC%8B%9C/
+- 통영시: 주차장 47곳, 상시 무료 20곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%ED%86%B5%EC%98%81%EC%8B%9C/
+- 하동군: 주차장 60곳, 상시 무료 57곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%ED%95%98%EB%8F%99%EA%B5%B0/
+- 함안군: 주차장 31곳, 상시 무료 29곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%ED%95%A8%EC%95%88%EA%B5%B0/
+- 함양군: 주차장 55곳, 상시 무료 46곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%ED%95%A8%EC%96%91%EA%B5%B0/
+- 합천군: 주차장 184곳, 상시 무료 176곳 — https://parking.itfinancelab.com/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84/%ED%95%A9%EC%B2%9C%EA%B5%B0/
+
+### 제주특별자치도 (주차장 1,557곳, 상시 무료 1,417곳)
+- 서귀포시: 주차장 113곳, 상시 무료 83곳 — https://parking.itfinancelab.com/%EC%A0%9C%EC%A3%BC%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%84%9C%EA%B7%80%ED%8F%AC%EC%8B%9C/
+- 제주시: 주차장 1,444곳, 상시 무료 1,334곳 — https://parking.itfinancelab.com/%EC%A0%9C%EC%A3%BC%ED%8A%B9%EB%B3%84%EC%9E%90%EC%B9%98%EB%8F%84/%EC%A0%9C%EC%A3%BC%EC%8B%9C/

@@ -234,14 +234,25 @@ footer.site a {
   box-shadow: var(--card-shadow);
   padding: 13px 15px;
 }
-.stat b {
+/* dl 구조: 라벨(dt)이 먼저 오지만 화면에서는 값(dd)이 위에 온다. */
+.stat { display: flex; flex-direction: column-reverse; justify-content: flex-end; }
+.stat dd {
   display: block;
+  margin: 0;
   font-size: 23px;
   font-weight: 800;
   letter-spacing: -0.035em;
   color: var(--accent);
 }
-.stat span { color: var(--muted); font-size: 12.5px; }
+.stat dt { color: var(--muted); font-size: 12.5px; }
+
+/* 시·도별 표 */
+.table-wrap { overflow-x: auto; margin: 0 0 20px; }
+.sido-table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--card); }
+.sido-table caption { text-align: left; color: var(--muted); font-size: 12.5px; padding: 0 0 8px; }
+.sido-table th, .sido-table td { padding: 9px 12px; border-bottom: 1px solid var(--line-soft); text-align: left; }
+.sido-table td { text-align: right; font-variant-numeric: tabular-nums; }
+.sido-table thead th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
 
 /* ---------- 지도 ---------- */
 
@@ -446,7 +457,7 @@ main.wrap code {
   h1 { font-size: 21px; }
   h2 { font-size: 17.5px; margin-top: 32px; }
   #map { height: 320px; }
-  .stat b { font-size: 20px; }
+  .stat dd { font-size: 20px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
   .act { padding: 8px 13px; font-size: 13px; }
 }
