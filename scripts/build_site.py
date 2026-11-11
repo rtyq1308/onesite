@@ -16,6 +16,7 @@ import hashlib
 import html
 import json
 import os
+import sys
 import re
 import shutil
 import time
@@ -23,6 +24,8 @@ import statistics
 import urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import seo_extra  # noqa: E402 — 지역별 표·수치·질문, 가이드 글 (2026-11-11)
 RAW_DIR = os.path.join(ROOT, "data", "raw")
 STATIC_DIR = os.path.join(ROOT, "static")
 # 사이트 루트에 그대로 올라가야 하는 파일들(검색엔진 소유확인 등)
@@ -828,11 +831,10 @@ def build_region_page(sido, sigungu, rows, siblings):
     priced = [r for r in paid if r["p30"]]
     cheapest = min((r["p30"] for r in priced), default=0)
 
-    title = "%s %s 주차장 %d곳 | 무료 %d곳·요금 비교 - %s" % (
-        short, sigungu, len(rows), len(always), SITE_NAME)
-    desc = ("%s %s의 주차장 %d곳을 한눈에. 상시 무료 %d곳과 유료 %d곳의 30분 요금을 "
-            "지도에서 비교하고 길찾기까지 바로 하세요."
-            % (sido, sigungu, len(rows), len(always), len(paid)))
+    # 2026-11-11: 제목·설명을 실제 검색어(○○ 무료주차장·공영주차장 요금)로, 본문에 지역별 수치·표·질문을 HTML 로.
+    title = "%s - %s" % (seo_extra.region_title(short, sigungu, rows), SITE_NAME)
+    desc = seo_extra.region_desc(sido, sigungu, rows)
+    region_faq = seo_extra.region_faq(sido, sigungu, rows)
 
     nearby = "".join(
         '<a href="../%s/">%s<small>주차장 %d곳</small></a>' % (name, e(name), count)
@@ -851,7 +853,7 @@ def build_region_page(sido, sigungu, rows, siblings):
 
     body = (
         '<p class="crumb"><a href="../../">홈</a> › <a href="../">%s</a> › %s</p>' % (e(sido), e(sigungu))
-        + "<h1>%s %s 무료·유료 주차장</h1>" % (e(sido), e(sigungu))
+        + "<h1>%s</h1>" % e(seo_extra.region_h1(short, sigungu, rows))
         + '<p class="lead">%s</p>' % lead_text(len(always), len(partly), len(paid), cheapest)
         + stat_block(
             [("상시 무료", "%d곳" % len(always))]
@@ -866,6 +868,10 @@ def build_region_page(sido, sigungu, rows, siblings):
         # 화면상 만 픽셀 아래로 밀려 아무도 못 본다.
         + share_bar("%s %s 주차장 요금 지도, 필요한 사람에게 보내주세요" % (sido, sigungu))
         + list_block()
+        + "<h2>%s %s 주차장 한눈에 보기</h2>" % (e(short), e(sigungu))
+        + seo_extra.region_facts(sido, sigungu, rows)
+        + seo_extra.region_table(sido, sigungu, rows, TODAY)
+        + seo_extra.faq_block("%s 주차장 자주 묻는 질문" % sigungu, region_faq)
         + ("<h2>%s의 다른 지역</h2><div class=\"grid\">%s</div>" % (e(sido), nearby) if nearby else "")
         + "<h2>이용 전에 확인하세요</h2>"
         + ('<p class="note"><b>“토요일 무료”, “공휴일 무료”로 표시된 곳은 그 날에만 '
@@ -890,6 +896,7 @@ def build_region_page(sido, sigungu, rows, siblings):
         + "<script>window.FREEMAP=%s;</script>" % json.dumps(config, ensure_ascii=False)
         + '<script src="../../assets/app.js?v=%s"></script>' % JS_VER
         + '<script type="application/ld+json">%s</script>' % json.dumps(breadcrumb, ensure_ascii=False)
+        + '<script type="application/ld+json">%s</script>' % json.dumps(seo_extra.faq_ld(region_faq), ensure_ascii=False)
     )
     render(os.path.join(sido, sigungu, "index.html"), title, desc,
            "%s/%s" % (SITE_URL, url_path), body, "../../", MAP_HEAD, scripts,
@@ -897,25 +904,31 @@ def build_region_page(sido, sigungu, rows, siblings):
     return url_path if rich else None
 
 
-def build_sido_page(sido, siblings, total):
+def build_sido_page(sido, siblings, total, items=None):
     short = SIDO_SHORT.get(sido, sido)
     grid = "".join(
         '<a href="%s/">%s<small>주차장 %d곳</small></a>' % (e(name), e(name), count)
         for name, count in siblings
     )
-    title = "%s 주차장 %s곳 | 무료주차장·요금 지도 - %s" % (short, format(total, ","), SITE_NAME)
+    title = "%s 무료주차장·공영주차장 요금 | 시군구별 %s곳 비교 - %s" % (short, format(total, ","), SITE_NAME)
+    sido_faq = seo_extra.sido_faq(sido, items) if items else []
     desc = ("%s의 무료·유료 주차장 %s곳을 시군구별로 정리했습니다. 지역을 고르면 지도와 "
             "목록에서 무료 여부와 30분 요금을 바로 비교할 수 있습니다."
             % (sido, format(total, ",")))
     body = (
         '<p class="crumb"><a href="../">홈</a> › %s</p>' % e(sido)
-        + "<h1>%s 무료·유료 주차장</h1>" % e(sido)
+        + "<h1>%s 무료주차장·공영주차장 요금</h1>" % e(sido)
         + '<p class="lead">시군구를 선택하면 지도와 목록이 열립니다. '
           '무료가 먼저 나오고, 유료는 30분 요금이 싼 순서로 보여줍니다.</p>'
         + stat_block([("주차장", format(total, ",") + "곳"),
                       ("지역", "%d개 시군구" % len(siblings))])
         + "<h2>%s 시군구별 주차장</h2>" % e(short)
         + '<div class="grid">%s</div>' % grid
+        + ((seo_extra.sido_facts(sido, items) + seo_extra.sido_table(sido, items)
+            + seo_extra.faq_block("%s 주차장 자주 묻는 질문" % short, sido_faq)) if items else "")
+        + '<p class="note">더 보기: <a href="../guide/free-parking-by-region/">시·도별 무료주차장 순위</a> · '
+          '<a href="../guide/parking-fee-30min/">30분 요금 비교</a> · '
+          '<a href="../guide/weekend-holiday-free-parking/">토요일·공휴일 무료 주차장</a></p>'
         + share_bar("%s 주차장 요금 지도, 주변에 공유해보세요" % sido)
         + ad_unit("bottom")
     )
@@ -931,7 +944,9 @@ def build_sido_page(sido, siblings, total):
                % json.dumps(KAKAO_JS_KEY)
                + '<script src="../assets/app.js?v=%s"></script>' % JS_VER
                + '<script type="application/ld+json">%s</script>'
-               % json.dumps(breadcrumb, ensure_ascii=False))
+               % json.dumps(breadcrumb, ensure_ascii=False)
+               + ('<script type="application/ld+json">%s</script>' % json.dumps(seo_extra.faq_ld(sido_faq), ensure_ascii=False)
+                  if sido_faq else ""))
     render(os.path.join(sido, "index.html"), title, desc,
            "%s/%s/" % (SITE_URL, sido), body, "../", scripts=scripts)
 
@@ -1412,7 +1427,7 @@ def main():
                 "f": sum(1 for r in bucket if r["fr"]), "c": centre,
             })
 
-        build_sido_page(sido, siblings, sido_total)
+        build_sido_page(sido, siblings, sido_total, items)
         sido_url = "%s/%s/" % (SITE_URL, sido)
         urls.append(sido_url)
         hashes.append((sido_url, content_hash(siblings)))
@@ -1443,6 +1458,29 @@ def main():
         urls.append(SITE_URL + "/" + path)
         hashes.append((SITE_URL + "/" + path,
                        content_hash([path, ABOUT_DESC, CONTACT_DESC, DATA_SOURCES, SAME_AS, CONTACT_EMAIL])))
+
+    # 2026-11-11: 가이드 글 (숫자는 원자료에서 센 값) + 목록 페이지
+    guide_list = seo_extra.guides(rows, [(s, sorted(by_sido[s], key=lambda x: x[0])) for s in ordered_sido], TODAY)
+    for slug, g_title, g_desc, g_body, g_faq in guide_list:
+        others = "".join('<li><a href="../%s/">%s</a></li>' % (s2, e(t2.split(" | ")[0]))
+                         for s2, t2, _d, _b, _f in guide_list if s2 != slug)
+        body = ('<p class="crumb"><a href="../../">홈</a> › <a href="../">주차 가이드</a></p>' + g_body
+                + seo_extra.faq_block("자주 묻는 질문", g_faq)
+                + "<h2>이어서 읽어 볼 글</h2><ul>%s</ul>" % others
+                + '<p><a href="../../">전국 무료주차장 지도 열기 →</a></p>')
+        render("guide/%s/index.html" % slug, "%s - %s" % (g_title, SITE_NAME), g_desc,
+               "%s/guide/%s/" % (SITE_URL, slug), body, "../../",
+               scripts='<script type="application/ld+json">%s</script>' % json.dumps(seo_extra.faq_ld(g_faq), ensure_ascii=False))
+        urls.append("%s/guide/%s/" % (SITE_URL, slug))
+        hashes.append(("%s/guide/%s/" % (SITE_URL, slug), content_hash([g_title, g_desc, g_body])))
+    render("guide/index.html", "주차 가이드 | 무료주차장·주차요금 정리 - %s" % SITE_NAME,
+           "무료주차장 찾는 법, 30분 요금 비교, 토요일·공휴일 무료, 노상·노외·부설 차이를 자료로 정리한 글 모음입니다.",
+           SITE_URL + "/guide/",
+           '<p class="crumb"><a href="../">홈</a> › 주차 가이드</p><h1>주차 가이드</h1><ul>%s</ul>'
+           % "".join('<li><a href="%s/">%s</a> — %s</li>' % (s2, e(t2.split(" | ")[0]), e(d2)) for s2, t2, d2, _b, _f in guide_list),
+           "../")
+    urls.append(SITE_URL + "/guide/")
+    hashes.append((SITE_URL + "/guide/", content_hash([g[0] for g in guide_list])))
 
     dates = resolve_lastmod(hashes)
     write_support_files(urls, dates)

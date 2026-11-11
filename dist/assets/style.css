@@ -602,3 +602,8 @@ main.wrap code {
   }
   .leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
 }
+
+/* 2026-11-11 지역 주차장 표 */
+.lot-table td.l, .lot-table th { text-align: left; }
+.lot-table td { white-space: nowrap; }
+.lot-table td.l { white-space: normal; min-width: 150px; }
