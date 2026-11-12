@@ -51,6 +51,11 @@ TODAY = datetime.date.today().isoformat()
 # 애드센스 - 값이 비면 광고 태그를 아예 넣지 않는다(승인 전 빈 ins 태그 방지).
 # 루트 도메인 itfinancelab.com 이 승인돼 있어 서브도메인은 별도 심사가 필요 없다.
 ADSENSE_CLIENT = env("ADSENSE_CLIENT", "ca-pub-8832347985556850")
+# 2026-11-12 사용자: 메인·서브를 뺀 원사이트 애드센스 송출 중단 — 다음 검색등록 승인 뒤 True 로 바꿔 다시 켠다.
+# 저장소 Variables(ADSENSE_CLIENT)가 있어도 이 스위치가 꺼져 있으면 광고 태그를 넣지 않는다 (매월 자동 빌드 포함).
+ADS_ON = False
+if not ADS_ON:
+    ADSENSE_CLIENT = ""
 AD_SLOTS = {
     "top": env("ADSENSE_SLOT_TOP", "7312787841"),        # 지도 아래
     "feed": env("ADSENSE_SLOT_FEED", "2367582929"),      # 목록 5번째 뒤
