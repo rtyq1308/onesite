@@ -1292,7 +1292,8 @@ def write_support_files(urls, dates):
     with open(os.path.join(DIST, "robots.txt"), "w", encoding="utf-8", newline="\n") as fp:
         fp.write("User-agent: *\nAllow: /\nSitemap: %s/sitemap.xml\n" % SITE_URL)
     with open(os.path.join(DIST, "_headers"), "w", encoding="utf-8", newline="\n") as fp:
-        fp.write("/assets/*\n  Cache-Control: public, max-age=604800\n"
+        fp.write("/*\n  Strict-Transport-Security: max-age=31536000\n"  # 2026-11-24 HSTS
+                 "/assets/*\n  Cache-Control: public, max-age=604800\n"
                  "/data/*\n  Cache-Control: public, max-age=21600\n")
     # ads.txt 는 기본적으로 만들지 않는다.
     # 이 사이트는 서브도메인이고, 애드센스는 루트 도메인(itfinancelab.com)의
