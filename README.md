@@ -5,6 +5,27 @@
 페이지와 주차장 데이터는 정적 파일이고, 장소명 검색만 Cloudflare Pages Function을 사용합니다.
 이제 일반 빌드에는 `NAVER_MAP_CLIENT_ID`가 필요합니다. 설정 전에는 `python scripts/build_site.py --preview`로 `.preview/`를 생성하세요.
 
+## 운영 중인 사이트
+
+- **[공짜맵 — 전국 무료주차장·공영주차장 요금 지도](https://parking.itfinancelab.com/)**: 이 저장소에서 빌드하는 사이트입니다. 공공데이터포털 주차장정보 표준데이터와 서울 열린데이터광장 자료로 시군구별 무료주차장 수와 30분 요금을 비교합니다.
+
+같은 운영자(신청 바로가기)가 만드는 생활 정보 사이트:
+
+| 사이트 | 내용 |
+|---|---|
+| [지원금 모음](https://subsidy.itfinancelab.com/) | 청년·노인·가족·일자리 지원 제도를 분야별로 비교하고 신청 조건을 요약 |
+| [KTX 예매 이용 안내](https://ktx.itfinancelab.com/) | 예매 열리는 시간, 취소 수수료, 결제 후 승차권 확인 순서 |
+| [화담숲 예약 안내](https://hwadamsup.itfinancelab.com/) | 예약 오픈 일정, 모노레일, 단풍 시기와 관람 시간 |
+| [개인통관고유부호 재발급 안내](https://personalcustomscode.itfinancelab.com/) | 조회·재발급 차이, 유효기간 갱신, 주소 변경 |
+| [건설 기초안전교육 안내](https://constructionsafety.itfinancelab.com/) | 이수증 분실·유효기간, 외국인 근로자 교육 |
+| [장애인활동지원사 교육 안내](https://activitysupport.itfinancelab.com/) | 교육 과정·실습, 서비스 신청, 65세 이후 이용 |
+| [전국 5일장 장날 일정표](https://jangnal.itfinancelab.com/) | 지자체 공식 자료로 확인한 시장별 장날과 다음 장날 계산 |
+| [세이펜 음원 다운로드 안내](https://saypen.itfinancelab.com/) | PC 연결, 책 인식 문제 확인 순서 |
+| [근처 약국 찾기 안내](https://24hourpharmacy.itfinancelab.com/) | 휴일·야간 약국 공식 검색과 방문 전 확인 |
+| [국군복지포탈 이용 안내](https://armywelfareportal.itfinancelab.com/) | 가족 등록, 공식 서비스 이용 |
+| [현대안전지갑 이용 안내](https://hyundaisafetywallet.itfinancelab.com/) | 설치·로그인 준비 |
+
+
 전국 **무료주차장**을 지도로 보여주는 정적 사이트.
 공공데이터를 미리 받아 HTML/JSON으로 구워두기 때문에 서버가 필요 없고,
 Cloudflare Pages에 그대로 올리면 끝난다.
